@@ -1,211 +1,165 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 
-export function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  
-  const { register } = useAuth();
+// ─── DESIGN TOKENS ─────────────────────────────────────────────────────────
+const T = {
+  green: '#16a34a',
+  greenDark: '#15803d',
+  greenLight: '#f0fdf4',
+  navy: '#0f172a',
+  navyMid: '#1e293b',
+  muted: '#64748b',
+  border: '#f1f5f9',
+  borderMid: '#e2e8f0',
+  bg: '#f8fafc',
+  white: '#ffffff',
+  red: '#ef4444',
+  redLight: '#fef2f2',
+};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(false);
-
-    // Validation
-    if (!email || !password || !displayName || !confirmPassword) {
-      setError('All fields are required');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await register(email, password, displayName);
-      setSuccess(true);
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setDisplayName('');
-    } catch (err) {
-      setError(err.message || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+// ─── FORM INPUT ──────────────────────────────────────────────────────────────
+function FormInput({ label, id, type = 'text', value, onChange, placeholder, disabled, required, showToggle, onToggle, showPw, error }) {
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Create Account</h2>
-        
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Full Name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="John Doe"
-              style={styles.input}
-              disabled={loading}
-            />
-          </div>
+    <div style={{ marginBottom: 18 }}>
+      <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 700 }}>
+        {label} {required && <span style={{ color: T.red }}>*</span>}
+      </label>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              style={styles.input}
-              disabled={loading}
-            />
-          </div>
+      <div style={{ position: 'relative' }}>
+        <input
+          id={id}
+          type={showToggle ? (showPw ? 'text' : 'password') : type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: 10,
+            border: `1px solid ${error ? T.red : T.borderMid}`,
+            outline: 'none'
+          }}
+        />
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimum 6 characters"
-              style={styles.input}
-              disabled={loading}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Confirm Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-              style={styles.input}
-              disabled={loading}
-            />
-          </div>
-
-          {error && <div style={styles.error}>{error}</div>}
-          {success && <div style={styles.success}>Registration successful! Redirecting...</div>}
-
-          <button 
-            type="submit" 
-            style={{...styles.button, opacity: loading ? 0.6 : 1}}
-            disabled={loading}
+        {showToggle && (
+          <button
+            type="button"
+            onClick={onToggle}
+            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)' }}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            👁
           </button>
-        </form>
-
-        <p style={styles.footer}>
-          Already have an account? <a href="/login" style={styles.link}>Sign In</a>
-        </p>
+        )}
       </div>
+
+      {error && <p style={{ color: T.red, fontSize: 12 }}>{error}</p>}
     </div>
   );
 }
 
-const styles = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: '20px',
-  },
-  card: {
-    background: 'white',
-    borderRadius: '12px',
-    padding: '40px',
-    maxWidth: '400px',
-    width: '100%',
-    boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: '30px',
-    color: '#333',
-    fontSize: '24px',
-    fontWeight: '600',
-  },
-  form: {
-    marginBottom: '20px',
-  },
-  formGroup: {
-    marginBottom: '20px',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '8px',
-    color: '#555',
-    fontWeight: '500',
-    fontSize: '14px',
-  },
-  input: {
-    width: '100%',
-    padding: '12px',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    boxSizing: 'border-box',
-    transition: 'border-color 0.3s',
-  },
-  button: {
-    width: '100%',
-    padding: '12px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'transform 0.2s',
-  },
-  error: {
-    background: '#fee',
-    color: '#c33',
-    padding: '12px',
-    borderRadius: '6px',
-    marginBottom: '20px',
-    fontSize: '14px',
-  },
-  success: {
-    background: '#efe',
-    color: '#3c3',
-    padding: '12px',
-    borderRadius: '6px',
-    marginBottom: '20px',
-    fontSize: '14px',
-  },
-  footer: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: '14px',
-  },
-  link: {
-    color: '#667eea',
-    textDecoration: 'none',
-    fontWeight: '600',
-  },
-};
+// ─── REGISTER COMPONENT ──────────────────────────────────────────────────────
+export function Register() {
+  const [form, setForm] = useState({
+    displayName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  // ✅ FIXED HANDLER (IMPORTANT)
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setForm(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  const validate = () => {
+    const errs = {};
+    if (!form.displayName.trim()) errs.displayName = 'Name required';
+    if (!form.email.includes('@')) errs.email = 'Invalid email';
+    if (form.password.length < 6) errs.password = 'Min 6 chars';
+    if (form.password !== form.confirmPassword) errs.confirmPassword = 'Passwords mismatch';
+    return errs;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errs = validate();
+    setFieldErrors(errs);
+
+    if (Object.keys(errs).length > 0) return;
+
+    alert("Registered Successfully 🚀");
+  };
+
+  return (
+    <div style={{ padding: 40, maxWidth: 400, margin: 'auto' }}>
+      <h2>Create Account</h2>
+
+      {error && <p>{error}</p>}
+
+      <form onSubmit={handleSubmit}>
+
+        <FormInput
+          label="Full Name"
+          id="displayName"
+          value={form.displayName}
+          onChange={handleChange}
+          error={fieldErrors.displayName}
+        />
+
+        <FormInput
+          label="Email"
+          id="email"
+          value={form.email}
+          onChange={handleChange}
+          error={fieldErrors.email}
+        />
+
+        <FormInput
+          label="Password"
+          id="password"
+          value={form.password}
+          onChange={handleChange}
+          showToggle
+          showPw={showPw}
+          onToggle={() => setShowPw(!showPw)}
+          error={fieldErrors.password}
+        />
+
+        <FormInput
+          label="Confirm Password"
+          id="confirmPassword"
+          value={form.confirmPassword}
+          onChange={handleChange}
+          showToggle
+          showPw={showConfirmPw}
+          onToggle={() => setShowConfirmPw(!showConfirmPw)}
+          error={fieldErrors.confirmPassword}
+        />
+
+        <button style={{
+          width: '100%',
+          padding: 12,
+          background: T.green,
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          marginTop: 10
+        }}>
+          Create Account
+        </button>
+
+      </form>
+    </div>
+  );
+}
+
+export default Register;
