@@ -115,42 +115,42 @@ const Ic = ({ name, size = 20, color, style = {} }) => {
 const PRODUCT_IMAGES = {
   // id → [primaryURL, fallbackURL, svgDataURI]
   1: [ // Bed
-    "https://images.unsplash.com/photo-1505693414120-0d443793663a?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1655149555319-54dcacd6fc52?auto=format&fit=crop&w=900&q=80",
     "https://picsum.photos/seed/bed-bamboo/900/600",
     null,
   ],
   2: [ // Desk
-    "https://images.unsplash.com/photo-1493934558415-9d19f0b2b4d2?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1724093835399-72d8e0eb1f3a?auto=format&fit=crop&w=900&q=80",
     "https://picsum.photos/seed/reclaimed-desk/900/600",
     null,
   ],
   3: [ // Shelf / Storage
-    "https://images.unsplash.com/photo-1594620302200-9a7621d9e23e?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1620225950093-8a84336daf79?auto=format&fit=crop&w=900&q=80",
     "https://picsum.photos/seed/modular-shelf/900/600",
     null,
   ],
   4: [ // Sofa
-    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1699901524286-41a46a4cd5c8?auto=format&fit=crop&w=900&q=80",
     "https://picsum.photos/seed/zen-sofa/900/600",
     null,
   ],
   5: [ // Dining table
-    "https://images.unsplash.com/photo-1533091908003-cf7497495d10?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1629811568222-38d011568222?auto=format&fit=crop&w=900&q=80",
     "https://picsum.photos/seed/fold-table/900/600",
     null,
   ],
   6: [ // Wardrobe
-    "https://images.unsplash.com/photo-1595428774223-ef52624120ec?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1558997519-83ea9252edf8?auto=format&fit=crop&w=900&q=80",
     "https://picsum.photos/seed/ecoward/900/600",
     null,
   ],
   7: [ // Storage bench
-    "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1549419163-b89531144565?auto=format&fit=crop&w=900&q=80",
     "https://picsum.photos/seed/storage-bench/900/600",
     null,
   ],
   8: [ // Chair
-    "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1561769278-25e779530972?auto=format&fit=crop&w=900&q=80",
     "https://picsum.photos/seed/study-chair/900/600",
     null,
   ],
@@ -179,7 +179,7 @@ const PRODUCTS = [
     desc: "Space-saving foldable bed crafted from certified bamboo. Folds flat in 30 seconds.",
     certifications: ["FSC", "GreenGuard"], carbonFootprint: "Low",
     dimensions: "190×90 cm (folded: 10 cm)", tag: "Bestseller", rating: 4.8, reviews: 214,
-    accentColor: "#f0fdf4",
+    accentColor: "#f9fafb",
   },
   {
     id: 2, name: "RecycloDesk Pro", category: "Desks", price: 8499,
@@ -188,7 +188,7 @@ const PRODUCTS = [
     desc: "Work-from-home desk made from reclaimed teak wood. Adjustable height.",
     certifications: ["FSC", "ISO14001"], carbonFootprint: "Very Low",
     dimensions: "120×60 cm, adjustable 70–110 cm", tag: "WFH Pick", rating: 4.6, reviews: 183,
-    accentColor: "#fefce8",
+    accentColor: "#fcfcfd",
   },
   {
     id: 3, name: "ModuShelf Stack Set", category: "Storage", price: 5999,
@@ -197,7 +197,7 @@ const PRODUCTS = [
     desc: "Stackable modular shelving in recycled steel. Mix & match configurations.",
     certifications: ["ISO14001"], carbonFootprint: "Medium",
     dimensions: "40×30×80 cm per unit", tag: "Modular", rating: 4.4, reviews: 97,
-    accentColor: "#ecfdf5",
+    accentColor: "#f9fafb",
   },
   {
     id: 4, name: "ZenSofa Convertible", category: "Sofas", price: 24999,
@@ -206,7 +206,7 @@ const PRODUCTS = [
     desc: "Sofa-to-bed convertible in 3 moves. Upholstered in recycled PET fabric.",
     certifications: ["FSC", "OEKO-TEX"], carbonFootprint: "Low",
     dimensions: "210×85 cm (bed: 210×130 cm)", tag: "Convertible", rating: 4.9, reviews: 311,
-    accentColor: "#f0fdf4",
+    accentColor: "#f8fafc",
   },
   {
     id: 5, name: "FoldDine Table", category: "Tables", price: 7299,
@@ -215,7 +215,7 @@ const PRODUCTS = [
     desc: "Wall-mounted fold-down dining table. Seats 4 when open, invisible when closed.",
     certifications: ["FSC", "GreenGuard"], carbonFootprint: "Very Low",
     dimensions: "120×75 cm (fold depth: 8 cm)", tag: "Space Saver", rating: 4.7, reviews: 152,
-    accentColor: "#fefce8",
+    accentColor: "#fcfcfd",
   },
   {
     id: 6, name: "EcoWard Modular", category: "Wardrobes", price: 15499,
@@ -224,7 +224,7 @@ const PRODUCTS = [
     desc: "Fully modular wardrobe with reclaimed wood panels. Add units as needed.",
     certifications: ["FSC"], carbonFootprint: "Low",
     dimensions: "100×50×200 cm per section", tag: "Customizable", rating: 4.5, reviews: 88,
-    accentColor: "#f0fdf4",
+    accentColor: "#f9fafb",
   },
   {
     id: 7, name: "SlimTrunk Storage Bench", category: "Storage", price: 4599,
@@ -233,7 +233,7 @@ const PRODUCTS = [
     desc: "Dual-function storage bench. Hidden compartment, seats 2 comfortably.",
     certifications: ["FSC", "GreenGuard"], carbonFootprint: "Very Low",
     dimensions: "120×40×45 cm", tag: "Multi-Use", rating: 4.6, reviews: 129,
-    accentColor: "#fefce8",
+    accentColor: "#fcfcfd",
   },
   {
     id: 8, name: "NestNook Study Chair", category: "Chairs", price: 6999,
@@ -242,7 +242,7 @@ const PRODUCTS = [
     desc: "Ergonomic study chair with bamboo back and recycled steel frame.",
     certifications: ["ISO14001", "GreenGuard"], carbonFootprint: "Low",
     dimensions: "45×45×85 cm, lumbar support included", tag: "Ergonomic", rating: 4.3, reviews: 76,
-    accentColor: "#ecfdf5",
+    accentColor: "#f9fafb",
   },
 ];
 
