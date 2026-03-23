@@ -7,6 +7,7 @@ import {
   updateProfile 
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import API from '../services/firebase-api';
 
 // Create Auth Context
 const AuthContext = createContext(null);
@@ -19,14 +20,32 @@ export function AuthProvider({ children }) {
 
   // Listen for auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        setUser({
-          id: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-        });
+        try {
+          // Verify token and get profile from backend
+          const token = await firebaseUser.getIdToken(true); // Force refresh to ensure valid
+          const response = await API.post('/auth/verify', { token });
+          const backendUser = response.data.user;
+
+          setUser({
+            id: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName || backendUser?.name,
+            photoURL: firebaseUser.photoURL,
+            role: backendUser?.role || 'customer',
+          });
+        } catch (err) {
+          console.error('Error fetching backend profile:', err);
+          // Fallback to basic Firebase user if backend is down
+          setUser({
+            id: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+            role: 'customer',
+          });
+        }
       } else {
         setUser(null);
       }
@@ -37,7 +56,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Register with email and password
-  const register = async (email, password, displayName) => {
+  const register = async (email, password, displayName, role = 'customer') => {
     setError(null);
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
@@ -47,11 +66,24 @@ export function AuthProvider({ children }) {
         await updateProfile(result.user, { displayName });
       }
 
+      // Sync with MongoDB backend
+      const token = await result.user.getIdToken();
+      const response = await API.post('/auth/register-firebase', { 
+        name: displayName, 
+        email, 
+        role 
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const backendUser = response.data.user;
+
       setUser({
         id: result.user.uid,
         email: result.user.email,
         displayName: displayName || result.user.displayName,
         photoURL: result.user.photoURL,
+        role: backendUser?.role || role,
       });
 
       return result.user;
@@ -67,14 +99,21 @@ export function AuthProvider({ children }) {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       
-      setUser({
+      // Fetch backend profile immediately to return it
+      const token = await result.user.getIdToken();
+      const response = await API.post('/auth/verify', { token });
+      const backendUser = response.data.user;
+
+      const fullUser = {
         id: result.user.uid,
         email: result.user.email,
-        displayName: result.user.displayName,
+        displayName: result.user.displayName || backendUser?.name,
         photoURL: result.user.photoURL,
-      });
+        role: backendUser?.role || 'customer',
+      };
 
-      return result.user;
+      setUser(fullUser);
+      return fullUser;
     } catch (err) {
       setError(err.message);
       throw err;

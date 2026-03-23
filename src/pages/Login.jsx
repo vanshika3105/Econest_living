@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 // ─── DESIGN TOKENS ─────────────────────────────────────────────────────────
 const T = {
@@ -102,18 +103,12 @@ function FormInput({ label, id, type = 'text', value, onChange, placeholder, dis
 
 // ─── LOGIN COMPONENT ────────────────────────────────────────────────────────
 export function Login() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Demo users (mirrors App.jsx logic)
-  const DEMO_USERS = [
-    { email: 'user@econest.com', password: 'eco123', name: 'Eco User', role: 'customer' },
-    { email: 'vendor@econest.com', password: 'vendor123', name: 'EcoVendor', role: 'supplier' },
-    { email: 'admin@econest.com', password: 'admin123', name: 'Admin EcoNest', role: 'admin' },
-  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -126,16 +121,14 @@ export function Login() {
 
     setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await login(email, password);
+      window.location.href = '/';
+    } catch (err) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
       setLoading(false);
-      const found = DEMO_USERS.find(u => u.email === email && u.password === password);
-      if (found) {
-        window.location.href = '/';
-      } else {
-        setError('Invalid email or password. Try user@econest.com / eco123');
-      }
-    }, 800);
+    }
   };
 
   return (
@@ -260,17 +253,16 @@ export function Login() {
             </button>
           </form>
 
-          {/* Demo credentials hint */}
+          {/* Tip */}
           <div style={{
             marginTop: 28, background: T.greenLight, borderRadius: 12,
             padding: '14px 16px', fontSize: 12, color: T.green,
             border: `1px solid rgba(22,163,74,0.15)`,
             lineHeight: 1.6,
           }}>
-            <strong style={{ display: 'block', marginBottom: 4 }}>Demo Credentials</strong>
-            User: user@econest.com / eco123<br />
-            Vendor: vendor@econest.com / vendor123<br />
-            Admin: admin@econest.com / admin123
+            <strong style={{ display: 'block', marginBottom: 4 }}>💡 Getting Started</strong>
+            Don't have an account yet?<br />
+            <a href="/register" style={{ color: T.greenDark, fontWeight: 700 }}>Create one here</a> — then sign in with your credentials.
           </div>
 
           <style>{`

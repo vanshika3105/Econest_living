@@ -6,6 +6,8 @@ import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import firebaseAuthRoutes from './routes/firebase-auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import cartRoutes from './routes/cart.routes.js';
+import orderRoutes from './routes/order.routes.js';
 
 dotenv.config();
 
@@ -28,6 +30,8 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/firebase/auth', firebaseAuthRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

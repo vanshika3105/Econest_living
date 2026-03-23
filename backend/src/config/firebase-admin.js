@@ -15,9 +15,11 @@ if (Object.keys(serviceAccount).length > 0) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
-  console.log('Firebase Admin SDK initialized');
+  console.log('Firebase Admin SDK initialized with full credentials');
 } else {
-  console.warn('Firebase Admin SDK not initialized - set FIREBASE_SERVICE_ACCOUNT_KEY');
+  // Initialize without credentials, only works for token verification
+  admin.initializeApp({ projectId: 'econestliving-70066' });
+  console.log('Firebase Admin SDK initialized without credentials (token verification only)');
 }
 
 export const getFirebaseAuth = () => admin.auth();

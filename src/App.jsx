@@ -1,32 +1,6 @@
-import { useState, useEffect, useCallback, createContext, useContext } from "react";
-
-// ════════════════════════════════════════════════════════════════════════════
-// AUTH CONTEXT — global role-aware user state
-// ════════════════════════════════════════════════════════════════════════════
-
-const AuthContext = createContext(null);
-
-function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem("en_user")); }
-    catch { return null; }
-  });
-  const login = useCallback((u) => {
-    setUser(u);
-    sessionStorage.setItem("en_user", JSON.stringify(u));
-  }, []);
-  const logout = useCallback(() => {
-    setUser(null);
-    sessionStorage.removeItem("en_user");
-  }, []);
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-const useAuth = () => useContext(AuthContext);
+import { useState, useEffect, useCallback } from "react";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import API from './services/api';
 
 // Role display metadata
 const ROLE_META = {
@@ -1693,23 +1667,26 @@ function LoginPage({ setPage }) {
     { value: "admin", label: "Admin", icon: "Shield", desc: "Manage the platform" },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (!form.email || !form.password) { setError("Please fill all fields."); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      const found = DEMO_ACCOUNTS.find(u => u.email === form.email && u.password === form.password && u.role === form.role);
-      if (found) {
-        login(found);
-        if (found.role === "supplier") setPage("vendor-home");
-        else if (found.role === "admin") setPage("admin-home");
-        else setPage("shop");
+    try {
+      const user = await login(form.email, form.password);
+      const role = user?.role || form.role || 'customer';
+      if (role === "supplier") setPage("vendor-home");
+      else if (role === "admin") setPage("admin-home");
+      else setPage("shop");
+    } catch (err) {
+      if (err.message) {
+        setError(err.message);
       } else {
-        setError("Incorrect credentials or wrong role selected. Use a demo account below.");
+        setError("Invalid credentials. Please try again.");
       }
-    }, 700);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -1847,7 +1824,7 @@ const RegisterField = ({ label, fkey, type = "text", placeholder, toggle, form, 
 );
 
 function RegisterPage({ setPage }) {
-  const { login } = useAuth();
+  const { register } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "", role: "customer" });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -1868,18 +1845,26 @@ function RegisterPage({ setPage }) {
     return e;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate(); setErrors(errs);
     if (Object.keys(errs).length) return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      login({ name: form.name, email: form.email, role: form.role });
-      if (form.role === "supplier") setPage("vendor-home");
-      else if (form.role === "admin") setPage("admin-home");
+    try {
+      const user = await register(form.email, form.password, form.name, form.role);
+      const role = user?.role || form.role || 'customer';
+      if (role === "supplier") setPage("vendor-home");
+      else if (role === "admin") setPage("admin-home");
       else setPage("shop");
-    }, 800);
+    } catch (err) {
+      if (err.message) {
+        setErrors({ email: err.message });
+      } else {
+        setErrors({ email: 'Registration failed. Please try again.' });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -2428,33 +2413,102 @@ function AppInner() {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
+  const formatCartPayload = (cartItems) => cartItems.map(i => ({
+    productId: i.product.id ? i.product.id.toString() : "unknown",
+    name: i.product.name,
+    price: i.product.price,
+    image: i.product.image,
+    qty: i.qty
+  }));
+
+  const parseOrderFromBackend = (order) => ({
+    ...order,
+    total: order.totalAmount,
+    timestamp: new Date(order.createdAt).getTime(),
+    items: (order.items || []).map(i => ({
+      product: PRODUCTS.find(p => p.id.toString() === i.productId) || { id: i.productId, name: i.name, price: i.price, image: i.image },
+      qty: i.qty
+    }))
+  });
+
+  useEffect(() => {
+    if (user && user.role === "customer") {
+      API.get('/cart').then(res => {
+        if (res.data?.items) {
+          const loadedCart = res.data.items.map(item => {
+            const fullProduct = PRODUCTS.find(p => p.id.toString() === item.productId) || {
+              id: item.productId, name: item.name, price: item.price, image: item.image, accentColor: T.greenLight
+            };
+            return { product: fullProduct, qty: item.qty };
+          });
+          setCart(loadedCart);
+        }
+      }).catch(err => console.error("Failed fetching cart:", err));
+
+      API.get('/orders').then(res => setOrders(res.data?.map(parseOrderFromBackend) || [])).catch(console.error);
+    } else {
+      setCart([]);
+      setOrders([]);
+    }
+  }, [user]);
+
   const addToCart = useCallback((product) => {
     if (!user) { setPage("login"); return; }
     if (user.role !== "customer") { notify("Only customers can add to cart."); return; }
     setCart(prev => {
       const ex = prev.find(i => i.product.id === product.id);
-      if (ex) return prev.map(i => i.product.id === product.id ? { ...i, qty: i.qty + 1 } : i);
-      return [...prev, { product, qty: 1 }];
+      const newCart = ex 
+        ? prev.map(i => i.product.id === product.id ? { ...i, qty: i.qty + 1 } : i)
+        : [...prev, { product, qty: 1 }];
+      API.post('/cart', { items: formatCartPayload(newCart) }).catch(console.error);
+      return newCart;
     });
     notify(`${product.name} added to cart!`);
   }, [user, notify]);
 
   const updateCart = useCallback((pid, qty) => {
-    if (qty <= 0) { setCart(prev => prev.filter(i => i.product.id !== pid)); return; }
-    setCart(prev => prev.map(i => i.product.id === pid ? { ...i, qty } : i));
+    if (qty <= 0) { 
+      setCart(prev => {
+        const newCart = prev.filter(i => i.product.id !== pid);
+        API.post('/cart', { items: formatCartPayload(newCart) }).catch(console.error);
+        return newCart;
+      });
+      return; 
+    }
+    setCart(prev => {
+      const newCart = prev.map(i => i.product.id === pid ? { ...i, qty } : i);
+      API.post('/cart', { items: formatCartPayload(newCart) }).catch(console.error);
+      return newCart;
+    });
   }, []);
 
   const removeFromCart = useCallback((pid) => {
-    setCart(prev => prev.filter(i => i.product.id !== pid));
+    setCart(prev => {
+      const newCart = prev.filter(i => i.product.id !== pid);
+      API.post('/cart', { items: formatCartPayload(newCart) }).catch(console.error);
+      return newCart;
+    });
     notify("Item removed from cart");
   }, [notify]);
 
-  const placeOrder = useCallback((orderDetails) => {
-    const newOrder = { ...orderDetails, orderId: `ECN-${Date.now().toString().slice(-6)}`, timestamp: Date.now() };
-    setOrders(prev => [newOrder, ...prev]);
-    setCart([]);
-    setPage("success");
-  }, []);
+  const placeOrder = useCallback(async (orderDetails) => {
+    try {
+      const orderPayload = {
+        items: formatCartPayload(orderDetails.items),
+        totalAmount: orderDetails.total,
+        shippingAddress: orderDetails.form,
+        paymentMethod: orderDetails.payMethod
+      };
+      const res = await API.post('/orders', orderPayload);
+      setOrders(prev => [parseOrderFromBackend(res.data), ...prev]);
+      setCart([]);
+      await API.post('/cart', { items: [] }).catch(console.error);
+      setPage("success");
+    } catch (err) {
+      notify("Failed to place order.");
+      console.error(err);
+    }
+  }, [notify]);
 
   const noNavPages = ["login", "register"];
   const noFooterPages = ["login", "register", "vendor-home", "vendor-products", "vendor-add", "admin-home", "admin-users", "admin-orders", "admin-vendors"];

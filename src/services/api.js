@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { auth } from '../config/firebase';
 
 // Create axios instance with base URL pointing to backend
 const API = axios.create({
@@ -9,10 +10,14 @@ const API = axios.create({
 });
 
 // Add token to requests if available
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+API.interceptors.request.use(async (config) => {
+  if (auth.currentUser) {
+    try {
+      const token = await auth.currentUser.getIdToken();
+      config.headers.Authorization = `Bearer ${token}`;
+    } catch (err) {
+      console.error('Error getting Firebase token:', err);
+    }
   }
   return config;
 });
@@ -20,9 +25,10 @@ API.interceptors.request.use((config) => {
 // Handle errors
 API.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
+      // Firebase auth signs out automatically if token is completely invalid/revoked
+      // but we can also trigger a redirect
       window.location.href = '/login';
     }
     return Promise.reject(error);
