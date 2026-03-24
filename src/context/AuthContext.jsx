@@ -59,14 +59,30 @@ export function AuthProvider({ children }) {
   const register = async (email, password, displayName, role = 'customer') => {
     setError(null);
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
+      let result;
+      try {
+        result = await createUserWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        // If the email is already in use (e.g. from an interrupted previous registration attempt)
+        if (err.code === 'auth/email-already-in-use') {
+          try {
+            // Try to log them in with the password they provided instead
+            result = await signInWithEmailAndPassword(auth, email, password);
+          } catch (loginErr) {
+            // If the password doesn't match, they really need to go to the login screen
+            throw new Error('Email is already registered. If this is your account, please go to the Sign In page.');
+          }
+        } else {
+          throw err;
+        }
+      }
       
       // Update profile with display name
       if (displayName) {
         await updateProfile(result.user, { displayName });
       }
 
-      // Sync with MongoDB backend
+      // Sync with MongoDB backend (updates role if it was interrupted before)
       const token = await result.user.getIdToken();
       const response = await API.post('/auth/register-firebase', { 
         name: displayName, 

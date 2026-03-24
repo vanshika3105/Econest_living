@@ -4,28 +4,37 @@ import admin from '../config/firebase-admin.js';
 // Verify existing firebase user or login
 export const verify = async (req, res) => {
   try {
-    const { token } = req.body;
+    // Try to get token from body or headers
+    let token = req.body.token;
+    const authHeader = req.headers.authorization;
+    if (!token && authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+
     if (!token) return res.status(401).json({ error: 'No token provided' });
 
     const decodedToken = await admin.auth().verifyIdToken(token);
     const email = decodedToken.email;
 
-    let user = await User.findOne({ email });
-    if (!user) {
-      // Auto-create if not found but valid in firebase
-      user = await User.create({
-        name: decodedToken.name || email.split('@')[0],
-        email: email,
-        password: 'firebase-managed', // dummy password since model requires it
-        role: 'customer'
-      });
-    }
+    // Use findOneAndUpdate with upsert to prevent race conditions from concurrent calls
+    const user = await User.findOneAndUpdate(
+      { email },
+      {
+        $setOnInsert: {
+          name: decodedToken.name || email.split('@')[0],
+          password: 'firebase-managed', // dummy password since model requires it
+          role: 'customer'
+        }
+      },
+      { new: true, upsert: true, runValidators: true }
+    );
 
     res.json({
       message: 'Verified successful',
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
+    console.error('Verify error:', error);
     res.status(401).json({ error: 'Invalid token: ' + error.message });
   }
 };

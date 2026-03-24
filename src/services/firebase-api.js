@@ -26,10 +26,8 @@ API.interceptors.request.use(async (config) => {
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid - user will be logged out by AuthContext
-      window.location.href = '/login';
-    }
+    // Avoid hard redirecting here so auth components can handle 401s properly
+    // AuthContext handles state when tokens expire.
     return Promise.reject(error);
   }
 );

@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import API from './services/api';
+import RazorpayMock from './components/RazorpayMock';
+import { auth } from './config/firebase';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 // Role display metadata
 const ROLE_META = {
@@ -955,16 +958,43 @@ function ProductCatalog({ onAddToCart }) {
   const [search, setSearch] = useState("");
   const [minEco, setMinEco] = useState(0);
   const [viewProduct, setViewProduct] = useState(null);
+  const [dbProducts, setDbProducts] = useState([]);
 
-  let filtered = PRODUCTS.filter(p => {
+  // Fetch vendor-added products from backend and merge with static seed
+  useEffect(() => {
+    import('./services/api').then(({ productAPI }) => {
+      productAPI.getAllProducts()
+        .then(res => {
+          const fetched = (res.data || []).map(p => ({
+            ...p,
+            id: p._id,           // use Mongo _id as id
+            image: p.image || "",
+            imageFallback: "",
+            accentColor: "#f0fdf4",
+            rating: p.rating || 4.0,
+            reviews: p.reviews || 0,
+            ecoScore: p.ecoScore || 75,
+            certifications: p.certifications || [],
+          }));
+          setDbProducts(fetched);
+        })
+        .catch(() => setDbProducts([]));
+    });
+  }, []);
+
+  // Merge: DB products first, then seed products (deduplication by name not needed, they're separate)
+  const allProducts = [...dbProducts, ...PRODUCTS];
+
+  let filtered = allProducts.filter(p => {
     if (category !== "All" && p.category !== category) return false;
     if (material !== "All Materials" && p.material !== material) return false;
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.desc.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !(p.desc || "").toLowerCase().includes(search.toLowerCase())) return false;
     if (p.ecoScore < minEco) return false;
     return true;
   });
   if (sort === "price-asc") filtered.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") filtered.sort((a, b) => b.price - a.price);
+
   if (sort === "eco-desc") filtered.sort((a, b) => b.ecoScore - a.ecoScore);
 
   return (
@@ -1292,10 +1322,15 @@ function CheckoutPage({ cart, user, onPlaceOrder }) {
   const [upiId, setUpiId] = useState("");
   const [step, setStep] = useState(1);
   const [processing, setProcessing] = useState(false);
+  const [showRazorpay, setShowRazorpay] = useState(false);
 
   const total = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
 
   const handlePlaceOrder = () => {
+    if (payMethod !== "cod") {
+      setShowRazorpay(true);
+      return;
+    }
     setProcessing(true);
     setTimeout(() => {
       setProcessing(false);
@@ -1461,11 +1496,104 @@ function CheckoutPage({ cart, user, onPlaceOrder }) {
           </div>
         </Card>
       </div>
+      {showRazorpay && (
+        <RazorpayMock 
+          amount={total} 
+          userDetails={form}
+          onClose={() => setShowRazorpay(false)} 
+          onSuccess={(paymentData) => {
+            setShowRazorpay(false);
+            onPlaceOrder({ form, payMethod, total, items: cart, paymentData });
+          }}
+        />
+      )}
     </div>
   );
 }
 
 // ─── ORDER SUCCESS ────────────────────────────────────────────────────────────
+
+const downloadInvoice = (order) => {
+  if (!order) return;
+  const invoiceHtml = `
+    <html>
+      <head>
+        <title>Invoice - ${order.orderId}</title>
+        <style>
+          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 24px; font-weight: bold; color: #16a34a; }
+          .invoice-details { text-align: right; }
+          .invoice-details h2 { margin: 0 0 5px 0; color: #555; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+          th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+          th { background-color: #f9fafb; font-weight: 600; }
+          .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; }
+          .footer { margin-top: 50px; text-align: center; color: #888; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="logo">EcoNest Living</div>
+            <p>Sustainable Furniture<br/>contact@econest.in</p>
+          </div>
+          <div class="invoice-details">
+            <h2>INVOICE</h2>
+            <p>Order ID: <strong>${order.orderId}</strong><br/>
+            Date: ${new Date(order.timestamp || Date.now()).toLocaleDateString()}</p>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 30px;">
+          <strong>Bill To:</strong><br/>
+          ${order.shippingAddress?.name || 'Customer'}<br/>
+          ${order.shippingAddress?.email || ''}<br/>
+          Payment Mode: ${order.paymentMethod?.toUpperCase() || '-'}
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th style="text-align: right;">Price</th>
+              <th style="text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(order.items || []).map(i => `
+              <tr>
+                <td>${i.product?.name || 'Item'}</td>
+                <td>${i.qty}</td>
+                <td style="text-align: right;">&#8377;${(i.product?.price || 0).toLocaleString("en-IN")}</td>
+                <td style="text-align: right;">&#8377;${((i.product?.price || 0) * i.qty).toLocaleString("en-IN")}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="total">
+          Amount Paid: &#8377;${(order.total || 0).toLocaleString("en-IN")}
+        </div>
+
+        <div class="footer">
+          Thank you for choosing eco-friendly living!<br/>
+          This is a computer-generated invoice.
+        </div>
+        <script>
+          window.onload = () => { setTimeout(() => { window.print(); }, 200); };
+        </script>
+      </body>
+    </html>
+  `;
+  const printWin = window.open('', '', 'width=800,height=900');
+  if (printWin) {
+    printWin.document.open();
+    printWin.document.write(invoiceHtml);
+    printWin.document.close();
+  }
+};
 
 function OrderSuccess({ order, onContinue, setPage }) {
   return (
@@ -1499,7 +1627,10 @@ function OrderSuccess({ order, onContinue, setPage }) {
         </Card>
       )}
 
-      <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+      <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+        <Btn variant="outline" size="lg" onClick={() => downloadInvoice(order)} style={{ borderRadius: 100 }}>
+          Download Invoice
+        </Btn>
         <Btn variant="outline" size="lg" onClick={() => setPage("orders")} style={{ borderRadius: 100 }}>
           <Ic name="Package" size={16} /> Track Order
         </Btn>
@@ -1689,6 +1820,21 @@ function LoginPage({ setPage }) {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      setPage("shop"); // route explicitly or naturally if auth hook updates
+    } catch (err) {
+      console.error("Google sign in failed:", err);
+      setError(err.message || 'Google Sign-In failed or was cancelled.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       {/* ── Left branding panel ── */}
@@ -1792,6 +1938,29 @@ function LoginPage({ setPage }) {
               fontFamily: "'Poppins',sans-serif", boxShadow: loading ? "none" : `0 8px 24px ${T.green}35`, transition: "all 0.2s",
             }}>{loading ? "Signing in…" : "Sign In"}</button>
           </form>
+
+          {/* Divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
+            <div style={{ flex: 1, height: 1, background: T.borderMid }} />
+            <span style={{ fontSize: 13, color: T.muted, fontWeight: 600 }}>OR</span>
+            <div style={{ flex: 1, height: 1, background: T.borderMid }} />
+          </div>
+
+          <button onClick={handleGoogleSignIn} disabled={loading} style={{
+            width: "100%", padding: "14px", borderRadius: 13, border: `1px solid ${T.borderMid}`,
+            background: "white", color: T.navy, fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
+            fontFamily: "'Poppins',sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+            transition: "all 0.2s", boxShadow: "0 2px 8px rgba(0,0,0,0.04)"
+          }} onMouseOver={e => { if(!loading){ e.currentTarget.style.background = T.bg; e.currentTarget.style.borderColor = T.green; } }}
+             onMouseOut={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.borderColor = T.borderMid; }}>
+            <svg width="20" height="20" viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+            </svg>
+            Sign in with Google
+          </button>
 
           <div style={{ marginTop: 20, background: T.greenLight, borderRadius: 11, padding: "13px 15px", fontSize: 12, color: T.green, border: `1px solid ${T.green}25`, lineHeight: 1.85 }}>
             <strong style={{ display: "block", marginBottom: 3 }}>Demo Accounts:</strong>
@@ -2018,11 +2187,26 @@ function UserDashboard({ setPage, orders, cart }) {
 
 function VendorDashboard({ setPage }) {
   const { user } = useAuth();
-  const myProducts = PRODUCTS.filter(p => p.supplierId === 1);
+  const [myProducts, setMyProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import('./services/api').then(({ productAPI }) => {
+      productAPI.getVendorProducts()
+        .then(res => setMyProducts(res.data || []))
+        .catch(() => setMyProducts([]))
+        .finally(() => setLoading(false));
+    });
+  }, []);
+
+  const avgEco = myProducts.length
+    ? Math.round(myProducts.reduce((s, p) => s + (p.ecoScore || 75), 0) / myProducts.length)
+    : 75;
+
   const stats = [
-    { icon: "Package", label: "Active Products", val: myProducts.length, color: T.green },
+    { icon: "Package", label: "Active Products", val: loading ? "…" : myProducts.length, color: T.green },
     { icon: "Trend", label: "Total Views", val: "2,421", color: T.blue },
-    { icon: "Leaf", label: "Avg Eco Score", val: Math.round(myProducts.reduce((s, p) => s + p.ecoScore, 0) / myProducts.length), color: "#84cc16" },
+    { icon: "Leaf", label: "Avg Eco Score", val: loading ? "…" : avgEco, color: "#84cc16" },
     { icon: "Award", label: "Certifications", val: "FSC, ISO", color: T.amber },
   ];
   return (
@@ -2060,93 +2244,245 @@ function VendorDashboard({ setPage }) {
             <div style={{ width: 40, height: 40, background: T.amberLight, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ic name="Plus" size={20} color={T.amber} /></div>
             <h3 style={{ fontSize: 15, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>Add Product</h3>
           </div>
-          <p style={{ fontSize: 13, color: T.muted }}>List a new eco-certified product for review</p>
+          <p style={{ fontSize: 13, color: T.muted }}>List a new eco-certified product</p>
         </Card>
       </div>
 
       <Card hover={false} style={{ padding: 26 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 18, fontFamily: "'Poppins',sans-serif" }}>Recent Activity</h3>
-        {[
-          { msg: "RecycloDesk Pro — 3 new orders today", time: "2h ago", c: T.green },
-          { msg: "BambooFlex Bed restocked — 15 units added", time: "1d ago", c: T.blue },
-          { msg: "FSC certification renewed for 2026", time: "3d ago", c: T.amber },
-        ].map((a, i, arr) => (
-          <div key={i} style={{ display: "flex", gap: 14, padding: "13px 0", borderBottom: i < arr.length - 1 ? `1px solid ${T.border}` : "none" }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: a.c, marginTop: 6, flexShrink: 0 }} />
-            <div><p style={{ fontSize: 13, color: T.navyMid }}>{a.msg}</p><p style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{a.time}</p></div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>Recent Products</h3>
+          <Btn variant="outline" size="sm" onClick={() => setPage("vendor-products")}>View All</Btn>
+        </div>
+        {loading ? (
+          <p style={{ fontSize: 13, color: T.muted }}>Loading…</p>
+        ) : myProducts.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "32px 0" }}>
+            <div style={{ fontSize: 36, marginBottom: 10 }}>📦</div>
+            <p style={{ fontSize: 14, color: T.muted }}>No products yet. <button onClick={() => setPage("vendor-add")} style={{ background: "none", border: "none", color: T.green, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 14 }}>Add your first product →</button></p>
           </div>
-        ))}
+        ) : (
+          myProducts.slice(0, 3).map((p, i, arr) => (
+            <div key={p._id} style={{ display: "flex", gap: 14, padding: "12px 0", borderBottom: i < arr.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
+              <div style={{ width: 42, height: 42, borderRadius: 10, background: T.greenLight, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {p.image ? <img src={p.image} alt="" style={{ width: 42, height: 42, borderRadius: 10, objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} /> : <Ic name="Package" size={20} color={T.green} />}
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: T.navyMid }}>{p.name}</p>
+                <p style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{p.category} · ₹{p.price?.toLocaleString("en-IN")}</p>
+              </div>
+              <Badge color={T.green}>Live</Badge>
+            </div>
+          ))
+        )}
       </Card>
     </div>
   );
 }
 
+
 function MyProductsPage() {
-  const myProducts = PRODUCTS.filter(p => p.supplierId === 1);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
+  const [toast, setToastMsg] = useState(null);
+
+  const fetchProducts = () => {
+    import('./services/api').then(({ productAPI }) => {
+      productAPI.getVendorProducts()
+        .then(res => setProducts(res.data || []))
+        .catch(() => setProducts([]))
+        .finally(() => setLoading(false));
+    });
+  };
+
+  useEffect(() => { fetchProducts(); }, []);
+
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Delete "${name}"?`)) return;
+    setDeletingId(id);
+    try {
+      const { productAPI } = await import('./services/api');
+      await productAPI.deleteProduct(id);
+      setProducts(prev => prev.filter(p => p._id !== id));
+      setToastMsg(`"${name}" deleted`);
+    } catch {
+      setToastMsg("Failed to delete product");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "48px 32px" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, marginBottom: 28, fontFamily: "'Poppins',sans-serif" }}>My Products</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {myProducts.map(p => (
-          <Card key={p.id} hover={false} style={{ padding: "16px 22px", display: "flex", gap: 16, alignItems: "center" }}>
-            <img src={p.image} alt="" style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
-              onError={e => { e.target.src = "https://picsum.photos/seed/" + p.id + "/200"; }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontWeight: 700, color: T.navy, fontSize: 15, fontFamily: "'Poppins',sans-serif" }}>{p.name}</p>
-              <p style={{ fontSize: 12, color: T.muted, marginTop: 3 }}>{p.category} · {p.stock} units in stock</p>
-            </div>
-            <EcoScore score={p.ecoScore} />
-            <p style={{ fontWeight: 800, color: T.green, fontSize: 16 }}>{formatPrice(p.price)}</p>
-            <Badge color={T.green}>Live</Badge>
-            <Btn variant="outline" size="sm">Edit</Btn>
-          </Card>
-        ))}
+      {toast && <Toast msg={toast} onClose={() => setToastMsg(null)} />}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>
+          My Products {!loading && <span style={{ fontSize: 16, color: T.muted, fontWeight: 600 }}>({products.length})</span>}
+        </h2>
       </div>
+
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "64px 0", color: T.muted }}>Loading products…</div>
+      ) : products.length === 0 ? (
+        <Card hover={false} style={{ padding: "60px 40px", textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>📦</div>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif", marginBottom: 8 }}>No Products Yet</h3>
+          <p style={{ fontSize: 14, color: T.muted, marginBottom: 24 }}>You haven't listed any products. Start adding eco-certified products to your store.</p>
+        </Card>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {products.map(p => (
+            <Card key={p._id} hover={false} style={{ padding: "16px 22px", display: "flex", gap: 16, alignItems: "center" }}>
+              <div style={{ width: 64, height: 64, borderRadius: 12, background: T.greenLight, overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {p.image
+                  ? <img src={p.image} alt="" style={{ width: 64, height: 64, objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
+                  : <Ic name="Package" size={28} color={T.green} />
+                }
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: 700, color: T.navy, fontSize: 15, fontFamily: "'Poppins',sans-serif" }}>{p.name}</p>
+                <p style={{ fontSize: 12, color: T.muted, marginTop: 3 }}>
+                  {p.category}{p.material ? ` · ${p.material}` : ""} · {p.stock ?? 0} units in stock
+                </p>
+              </div>
+              <EcoScore score={p.ecoScore || 75} />
+              <p style={{ fontWeight: 800, color: T.green, fontSize: 16, minWidth: 90, textAlign: "right" }}>₹{p.price?.toLocaleString("en-IN")}</p>
+              <Badge color={T.green}>Live</Badge>
+              <Btn
+                variant="danger"
+                size="sm"
+                disabled={deletingId === p._id}
+                onClick={() => handleDelete(p._id, p.name)}
+              >
+                {deletingId === p._id ? "…" : "Delete"}
+              </Btn>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function AddProductPage() {
-  const [form, setForm] = useState({ name: "", price: "", category: "Beds", desc: "", image: "" });
-  const [submitted, setSubmitted] = useState(false);
 
-  if (submitted) return (
+function AddProductPage({ setPage }) {
+  const [form, setForm] = useState({
+    name: "", price: "", category: "Beds", desc: "",
+    image: "", material: "", ecoScore: "80", stock: "10", tag: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handle = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
+
+  const handleSubmit = async () => {
+    setError("");
+    if (!form.name.trim()) { setError("Product name is required"); return; }
+    if (!form.price || isNaN(Number(form.price))) { setError("Valid price is required"); return; }
+    setLoading(true);
+    try {
+      const { productAPI } = await import('./services/api');
+      await productAPI.createProduct({
+        name: form.name.trim(),
+        price: Number(form.price),
+        category: form.category,
+        desc: form.desc.trim(),
+        image: form.image.trim(),
+        material: form.material.trim(),
+        ecoScore: Number(form.ecoScore) || 80,
+        stock: Number(form.stock) || 0,
+        tag: form.tag.trim(),
+      });
+      setSuccess(true);
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to add product. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) return (
     <div style={{ maxWidth: 520, margin: "80px auto", padding: "0 32px", textAlign: "center" }}>
-      <div style={{ width: 80, height: 80, background: T.amberLight, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 22px" }}>
-        <Ic name="Clock" size={36} color={T.amber} />
+      <div style={{ width: 80, height: 80, background: T.greenLight, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 22px" }}>
+        <Ic name="Check" size={36} color={T.green} />
       </div>
-      <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif", marginBottom: 10 }}>Awaiting Verification</h2>
-      <p style={{ color: T.muted, lineHeight: 1.7 }}>Our sustainability team will review your listing in 24–48 hours.</p>
-      <Btn variant="outline" onClick={() => setSubmitted(false)} style={{ marginTop: 24 }}>List Another Product</Btn>
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif", marginBottom: 10 }}>Product Listed!</h2>
+      <p style={{ color: T.muted, lineHeight: 1.7, marginBottom: 28 }}>
+        <strong>{form.name}</strong> is now live in the shop and your product list.
+      </p>
+      <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+        <Btn onClick={() => { setSuccess(false); setForm({ name: "", price: "", category: "Beds", desc: "", image: "", material: "", ecoScore: "80", stock: "10", tag: "" }); }}>
+          Add Another
+        </Btn>
+        <Btn variant="outline" onClick={() => setPage("vendor-products")}>
+          View My Products
+        </Btn>
+      </div>
     </div>
   );
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "48px 32px" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, marginBottom: 28, fontFamily: "'Poppins',sans-serif" }}>Add New Product</h2>
+    <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 32px" }}>
+      <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, marginBottom: 8, fontFamily: "'Poppins',sans-serif" }}>Add New Product</h2>
+      <p style={{ fontSize: 14, color: T.muted, marginBottom: 28 }}>Fill in the details below. Your product will appear live in the customer shop immediately.</p>
       <Card hover={false} style={{ padding: 32 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <Input label="Product Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. BambooFlex Chair" />
-          <Input label="Price (₹)" type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="e.g. 12999" />
-          <Select label="Category" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
-            {CATEGORIES.filter(c => c !== "All").map(c => <option key={c}>{c}</option>)}
-          </Select>
-          <Input label="Image URL" value={form.image} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} placeholder="https://images.unsplash.com/..." />
+
+          {error && (
+            <div style={{ background: T.redLight, color: T.red, padding: "12px 16px", borderRadius: 12, fontSize: 13, display: "flex", gap: 8, alignItems: "center", border: `1px solid ${T.red}25` }}>
+              <Ic name="Alert" size={15} color={T.red} />{error}
+            </div>
+          )}
+
+          <Input label="Product Name *" value={form.name} onChange={handle("name")} placeholder="e.g. BambooFlex Chair" />
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <Input label="Price (₹) *" type="number" value={form.price} onChange={handle("price")} placeholder="e.g. 12999" />
+            <Input label="Stock (units)" type="number" value={form.stock} onChange={handle("stock")} placeholder="e.g. 10" />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <Select label="Category *" value={form.category} onChange={handle("category")}>
+              {CATEGORIES.filter(c => c !== "All").map(c => <option key={c}>{c}</option>)}
+            </Select>
+            <Input label="Eco Score (0–100)" type="number" value={form.ecoScore} onChange={handle("ecoScore")} placeholder="e.g. 85" />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <Input label="Material" value={form.material} onChange={handle("material")} placeholder="e.g. Bamboo, Reclaimed Wood" />
+            <Input label="Tag (optional)" value={form.tag} onChange={handle("tag")} placeholder="e.g. Bestseller, New" />
+          </div>
+
+          <Input label="Image URL (optional)" value={form.image} onChange={handle("image")} placeholder="https://images.unsplash.com/..." />
+
+          {form.image && (
+            <div style={{ borderRadius: 12, overflow: "hidden", height: 160, background: T.bg }}>
+              <img src={form.image} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                onError={e => { e.target.style.display = "none"; }} />
+            </div>
+          )}
+
           <div>
             <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.navyMid, marginBottom: 8 }}>Description</label>
-            <textarea value={form.desc} onChange={e => setForm(f => ({ ...f, desc: e.target.value }))} rows={4}
+            <textarea value={form.desc} onChange={handle("desc")} rows={4}
               style={{ width: "100%", padding: "13px 15px", border: `1.5px solid ${T.borderMid}`, borderRadius: 12, fontSize: 14, outline: "none", background: T.bg, boxSizing: "border-box", resize: "none", fontFamily: "'Inter',sans-serif" }}
               placeholder="Describe eco materials, certifications, dimensions…" />
           </div>
-          <div style={{ background: T.amberLight, border: `1px solid ${T.amber}40`, borderRadius: 12, padding: "12px 16px", fontSize: 13, color: "#92400e", display: "flex", gap: 10 }}>
-            <Ic name="Alert" size={15} color={T.amber} />FSC or ISO certification documents required for eco-score calculation.
+
+          <div style={{ background: T.greenLight, border: `1px solid ${T.green}30`, borderRadius: 12, padding: "12px 16px", fontSize: 13, color: T.green, display: "flex", gap: 10 }}>
+            <Ic name="Leaf" size={15} color={T.green} />Products appear live in the customer shop immediately after submission.
           </div>
-          <Btn full size="lg" onClick={() => setSubmitted(true)} style={{ borderRadius: 14 }}>Submit for Review</Btn>
+
+          <Btn full size="lg" onClick={handleSubmit} disabled={loading} style={{ borderRadius: 14 }}>
+            {loading ? "Publishing…" : "Publish Product"}
+          </Btn>
         </div>
       </Card>
     </div>
   );
 }
+
 
 // ════════════════════════════════════════════════════════════════════════════
 // ADMIN — Overview, Users, Orders, Vendors (each as a separate page)
@@ -2590,7 +2926,7 @@ function AppInner() {
         )}
         {page === "vendor-add" && (
           <ProtectedPage allowedRole="supplier" setPage={setPage}>
-            <AddProductPage />
+            <AddProductPage setPage={setPage} />
           </ProtectedPage>
         )}
 

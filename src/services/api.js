@@ -26,11 +26,8 @@ API.interceptors.request.use(async (config) => {
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      // Firebase auth signs out automatically if token is completely invalid/revoked
-      // but we can also trigger a redirect
-      window.location.href = '/login';
-    }
+    // Avoid hard redirecting here so the UI can handle and display 401 errors
+    // (like invalid credentials or expired token during auth flows)
     return Promise.reject(error);
   }
 );
@@ -55,6 +52,7 @@ export const userAPI = {
 
 export const productAPI = {
   getAllProducts: () => API.get('/products'),
+  getVendorProducts: () => API.get('/products/mine'),
   getProduct: (id) => API.get(`/products/${id}`),
   createProduct: (data) => API.post('/products', data),
   updateProduct: (id, data) => API.put(`/products/${id}`, data),
