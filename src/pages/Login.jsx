@@ -138,6 +138,7 @@ export function Login() {
       setLoading(true);
       setError(null);
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
       window.location.href = '/';
     } catch (err) {

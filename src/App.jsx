@@ -73,12 +73,23 @@ const Icon = {
   LogOut: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>,
   EyeOff: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>,
   BarChart: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>,
+  Maximize: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></svg>,
+  Cpu: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="15" x2="23" y2="15" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="15" x2="4" y2="15" /></svg>,
+  Lock: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
+  RefreshCw: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>,
+  Zap: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>,
 };
 
 // helper: icon with fixed size
-const Ic = ({ name, size = 20, color, style = {} }) => {
+const Ic = ({ name, size = 20, color, spinning, style = {} }) => {
   const C = Icon[name];
-  return <C width={size} height={size} style={{ color, flexShrink: 0, ...style }} />;
+  const spinStyle = spinning ? { animation: "spin 2s linear infinite" } : {};
+  return (
+    <>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <C width={size} height={size} style={{ color, flexShrink: 0, ...spinStyle, ...style }} />
+    </>
+  );
 };
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
@@ -156,7 +167,7 @@ const PRODUCTS = [
     desc: "Space-saving foldable bed crafted from certified bamboo. Folds flat in 30 seconds.",
     certifications: ["FSC", "GreenGuard"], carbonFootprint: "Low",
     dimensions: "190×90 cm (folded: 10 cm)", tag: "Bestseller", rating: 4.8, reviews: 214,
-    accentColor: "#f9fafb",
+    accentColor: "#f9fafb", isRentable: true, rentPricePerMonth: 1899,
   },
   {
     id: 2, name: "RecycloDesk Pro", category: "Desks", price: 8499,
@@ -165,7 +176,7 @@ const PRODUCTS = [
     desc: "Work-from-home desk made from reclaimed teak wood. Adjustable height.",
     certifications: ["FSC", "ISO14001"], carbonFootprint: "Very Low",
     dimensions: "120×60 cm, adjustable 70–110 cm", tag: "WFH Pick", rating: 4.6, reviews: 183,
-    accentColor: "#fcfcfd",
+    accentColor: "#fcfcfd", isRentable: true, rentPricePerMonth: 849,
   },
   {
     id: 3, name: "ModuShelf Stack Set", category: "Storage", price: 5999,
@@ -174,7 +185,7 @@ const PRODUCTS = [
     desc: "Stackable modular shelving in recycled steel. Mix & match configurations.",
     certifications: ["ISO14001"], carbonFootprint: "Medium",
     dimensions: "40×30×80 cm per unit", tag: "Modular", rating: 4.4, reviews: 97,
-    accentColor: "#f9fafb",
+    accentColor: "#f9fafb", isRentable: true, rentPricePerMonth: 599,
   },
   {
     id: 4, name: "ZenSofa Convertible", category: "Sofas", price: 24999,
@@ -183,7 +194,7 @@ const PRODUCTS = [
     desc: "Sofa-to-bed convertible in 3 moves. Upholstered in recycled PET fabric.",
     certifications: ["FSC", "OEKO-TEX"], carbonFootprint: "Low",
     dimensions: "210×85 cm (bed: 210×130 cm)", tag: "Convertible", rating: 4.9, reviews: 311,
-    accentColor: "#f8fafc",
+    accentColor: "#f8fafc", isRentable: true, rentPricePerMonth: 2499,
   },
   {
     id: 5, name: "FoldDine Table", category: "Tables", price: 7299,
@@ -192,7 +203,7 @@ const PRODUCTS = [
     desc: "Wall-mounted fold-down dining table. Seats 4 when open, invisible when closed.",
     certifications: ["FSC", "GreenGuard"], carbonFootprint: "Very Low",
     dimensions: "120×75 cm (fold depth: 8 cm)", tag: "Space Saver", rating: 4.7, reviews: 152,
-    accentColor: "#fcfcfd",
+    accentColor: "#fcfcfd", isRentable: true, rentPricePerMonth: 729,
   },
   {
     id: 6, name: "EcoWard Modular", category: "Wardrobes", price: 15499,
@@ -201,7 +212,7 @@ const PRODUCTS = [
     desc: "Fully modular wardrobe with reclaimed wood panels. Add units as needed.",
     certifications: ["FSC"], carbonFootprint: "Low",
     dimensions: "100×50×200 cm per section", tag: "Customizable", rating: 4.5, reviews: 88,
-    accentColor: "#f9fafb",
+    accentColor: "#f9fafb", isRentable: true, rentPricePerMonth: 1549,
   },
   {
     id: 7, name: "SlimTrunk Storage Bench", category: "Storage", price: 4599,
@@ -210,7 +221,7 @@ const PRODUCTS = [
     desc: "Dual-function storage bench. Hidden compartment, seats 2 comfortably.",
     certifications: ["FSC", "GreenGuard"], carbonFootprint: "Very Low",
     dimensions: "120×40×45 cm", tag: "Multi-Use", rating: 4.6, reviews: 129,
-    accentColor: "#fcfcfd",
+    accentColor: "#fcfcfd", isRentable: true, rentPricePerMonth: 459,
   },
   {
     id: 8, name: "NestNook Study Chair", category: "Chairs", price: 6999,
@@ -219,7 +230,7 @@ const PRODUCTS = [
     desc: "Ergonomic study chair with bamboo back and recycled steel frame.",
     certifications: ["ISO14001", "GreenGuard"], carbonFootprint: "Low",
     dimensions: "45×45×85 cm, lumbar support included", tag: "Ergonomic", rating: 4.3, reviews: 76,
-    accentColor: "#f9fafb",
+    accentColor: "#f9fafb", isRentable: true, rentPricePerMonth: 699,
   },
 ];
 
@@ -396,6 +407,8 @@ function Navbar({ page, setPage, cart }) {
     ],
     admin: [
       { id: "admin-home", label: "Overview", icon: "BarChart" },
+      { id: "admin-crm", label: "CRM Mode", icon: "Award" },
+      { id: "admin-reviews", label: "Global Feedback", icon: "Star" },
       { id: "admin-users", label: "Users", icon: "Users" },
       { id: "admin-orders", label: "Orders", icon: "Package" },
       { id: "admin-vendors", label: "Vendors", icon: "Factory" },
@@ -797,17 +810,29 @@ function ProductCard({ product, onAdd, onView }) {
           </div>
         )}
 
-        {/* Stock indicator */}
         <div style={{
           position: "absolute", top: 14, right: 14,
-          background: isLowStock ? "rgba(239,68,68,0.92)" : "rgba(255,255,255,0.92)",
-          color: isLowStock ? "white" : T.green,
-          fontSize: 10, fontWeight: 800, padding: "5px 11px", borderRadius: 100,
-          backdropFilter: "blur(6px)",
-          border: isLowStock ? "none" : `1px solid ${T.green}40`,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end"
         }}>
-          {isLowStock ? `Only ${product.stock} left` : "In Stock"}
+          <div style={{
+            background: isLowStock ? "rgba(239,68,68,0.92)" : "rgba(255,255,255,0.92)",
+            color: isLowStock ? "white" : T.green,
+            fontSize: 10, fontWeight: 800, padding: "5px 11px", borderRadius: 100,
+            backdropFilter: "blur(6px)",
+            border: isLowStock ? "none" : `1px solid ${T.green}40`,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}>
+            {isLowStock ? `Only ${product.stock} left` : "In Stock"}
+          </div>
+          {(product.isRentable || true) && (
+            <div style={{
+              background: `linear-gradient(135deg, ${T.amber}, ${T.amber}dd)`,
+              color: "white", fontSize: 10, fontWeight: 800, padding: "5px 11px", borderRadius: 100,
+              boxShadow: "0 2px 8px rgba(245,158,11,0.3)",
+            }}>
+              Rent Available
+            </div>
+          )}
         </div>
 
         {/* Wishlist heart */}
@@ -896,7 +921,12 @@ function ProductCard({ product, onAdd, onView }) {
             <div style={{ fontSize: 19, fontWeight: 800, color: T.green, fontFamily: "'Poppins', sans-serif", lineHeight: 1 }}>
               {formatPrice(product.price)}
             </div>
-            <div style={{ fontSize: 10, color: T.muted, textAlign: "right", marginTop: 2 }}>incl. taxes</div>
+            {(product.isRentable || true) && (
+              <div style={{ fontSize: 11, color: T.amber, fontWeight: 700, textAlign: "right", marginTop: 2 }}>
+                or {formatPrice(product.rentPricePerMonth || Math.floor(product.price * 0.1))}/mo
+              </div>
+            )}
+            {!product.isRentable && <div style={{ fontSize: 10, color: T.muted, textAlign: "right", marginTop: 2 }}>incl. taxes</div>}
           </div>
         </div>
 
@@ -905,10 +935,10 @@ function ProductCard({ product, onAdd, onView }) {
           <button
             onClick={() => onView(product)}
             style={{
-              flex: 1, padding: "11px 0",
+              flex: 1, padding: "9px 0",
               background: "transparent",
               border: `1.5px solid ${T.borderMid}`,
-              borderRadius: 11, fontSize: 13, fontWeight: 700,
+              borderRadius: 11, fontSize: 12, fontWeight: 700,
               color: T.navyMid, cursor: "pointer",
               fontFamily: "'Poppins', sans-serif",
               transition: "all 0.2s",
@@ -917,13 +947,13 @@ function ProductCard({ product, onAdd, onView }) {
             onMouseOver={e => { e.currentTarget.style.borderColor = T.green; e.currentTarget.style.color = T.green; }}
             onMouseOut={e => { e.currentTarget.style.borderColor = T.borderMid; e.currentTarget.style.color = T.navyMid; }}
           >
-            <Ic name="Eye" size={14} /> Details
+            <Ic name="Eye" size={13} />
           </button>
 
           <button
             onClick={handleAdd}
             style={{
-              flex: 2, padding: "11px 0",
+              flex: 2, padding: "9px 0",
               background: added
                 ? T.greenLight
                 : `linear-gradient(135deg, ${T.green} 0%, ${T.greenDark} 100%)`,
@@ -941,8 +971,9 @@ function ProductCard({ product, onAdd, onView }) {
             onMouseOut={e => { if (!added) { e.currentTarget.style.boxShadow = `0 4px 16px ${T.green}40`; e.currentTarget.style.transform = "scale(1)"; } }}
           >
             <Ic name={added ? "Check" : "Cart"} size={14} />
-            {added ? "Added to Cart!" : "Add to Cart"}
+            {added ? "Added!" : "Add to Cart"}
           </button>
+
         </div>
       </div>
     </div>
@@ -951,18 +982,18 @@ function ProductCard({ product, onAdd, onView }) {
 
 // ─── PRODUCT CATALOG ─────────────────────────────────────────────────────────
 
-function ProductCatalog({ onAddToCart }) {
+function ProductCatalog({ onAddToCart, notify, setViewProduct }) {
   const [category, setCategory] = useState("All");
   const [material, setMaterial] = useState("All Materials");
   const [sort, setSort] = useState("default");
   const [search, setSearch] = useState("");
   const [minEco, setMinEco] = useState(0);
-  const [viewProduct, setViewProduct] = useState(null);
   const [dbProducts, setDbProducts] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
 
   // Fetch vendor-added products from backend and merge with static seed
   useEffect(() => {
-    import('./services/api').then(({ productAPI }) => {
+    import('./services/api').then(({ default: API, productAPI }) => {
       productAPI.getAllProducts()
         .then(res => {
           const fetched = (res.data || []).map(p => ({
@@ -979,6 +1010,10 @@ function ProductCatalog({ onAddToCart }) {
           setDbProducts(fetched);
         })
         .catch(() => setDbProducts([]));
+        
+      if (API) {
+        API.get('/recommendations').then(res => setRecommendations(res.data || [])).catch(() => {});
+      }
     });
   }, []);
 
@@ -1062,6 +1097,26 @@ function ProductCatalog({ onAddToCart }) {
           ))}
         </div>
 
+        {/* Personalized Recommendations */}
+        {recommendations.length > 0 && category === "All" && !search && (
+          <div style={{ marginBottom: 64 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: T.amberLight, display: "flex", alignItems: "center", justifyContent: "center" }}><Ic name="Star" size={24} color={T.amber} /></div>
+              <div>
+                <h3 style={{ fontSize: 24, fontWeight: 800, color: T.navy, fontFamily: "'Poppins', sans-serif" }}>Recommended For You</h3>
+                <p style={{ fontSize: 13, color: T.muted }}>Based on your eco-preferences and browsing history</p>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))", gap: 32 }}>
+              {recommendations.slice(0, 4).map(r => {
+                 const p = allProducts.find(x => (x.id || x._id) === r._id) || { ...r, id: r._id, rating: 4.0, reviews: 0 };
+                 return <ProductCard key={p.id} product={p} onAdd={onAddToCart} onView={setViewProduct} />;
+              })}
+            </div>
+            <div style={{ height: 1, background: T.border, margin: "48px 0 0" }} />
+          </div>
+        )}
+
         {/* Product Grid */}
         <div style={{
           display: "grid",
@@ -1088,19 +1143,28 @@ function ProductCatalog({ onAddToCart }) {
         )}
       </div>
 
-      {/* Product Detail Modal */}
-      {viewProduct && <ProductModal product={viewProduct} onClose={() => setViewProduct(null)} onAdd={onAddToCart} />}
     </section>
   );
 }
 
 // ─── PRODUCT MODAL ───────────────────────────────────────────────────────────
 
-function ProductModal({ product, onClose, onAdd }) {
+function ProductModal({ product, onClose, onAdd, notify }) {
+  const { user } = useAuth();
   const [added, setAdded] = useState(false);
+  const [isRental, setIsRental] = useState(false);
+  const [rentalDuration, setRentalDuration] = useState(1);
+
+  useEffect(() => {
+    import('./services/api').then(({ default: API }) => {
+      if (API) {
+        API.post('/crm/track', { actionType: 'view', productId: product._id || product.id }).catch(() => {});
+      }
+    });
+  }, [product]);
 
   const handleAdd = () => {
-    onAdd(product);
+    onAdd({ ...product, _isRental: isRental, _rentalDuration: rentalDuration });
     setAdded(true);
     setTimeout(() => { setAdded(false); onClose(); }, 1200);
   };
@@ -1188,24 +1252,49 @@ function ProductModal({ product, onClose, onAdd }) {
           {/* Bottom row */}
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <EcoScore score={product.ecoScore} />
-            <button
-              onClick={handleAdd}
-              style={{
-                flex: 1, padding: "15px 0",
-                background: added ? T.greenLight : `linear-gradient(135deg, ${T.green}, ${T.greenDark})`,
-                border: added ? `1.5px solid ${T.green}50` : "none",
-                borderRadius: 14, fontSize: 15, fontWeight: 800,
-                color: added ? T.green : "white",
-                cursor: "pointer", fontFamily: "'Poppins', sans-serif",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                boxShadow: added ? "none" : `0 8px 24px ${T.green}40`,
-                transition: "all 0.25s ease",
-              }}
-            >
-              <Ic name={added ? "Check" : "Cart"} size={18} />
-              {added ? "Added to Cart!" : "Add to Cart"}
-            </button>
+            
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+              {(product.isRentable || true) && (
+                <div style={{ display: "flex", gap: 16, alignItems: "center", background: T.bg, padding: "12px 20px", borderRadius: 16, border: `2px solid ${T.borderMid}` }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 800, color: isRental ? T.muted : T.navy, cursor: "pointer", transition: "all 0.2s" }}>
+                    <input type="radio" checked={!isRental} onChange={() => setIsRental(false)} name="purchaseType" style={{ width: 18, height: 18, accentColor: T.green }} /> Buy Now
+                  </label>
+                  <div style={{ width: 2, height: 24, background: T.borderMid }} />
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 800, color: isRental ? T.navy : T.muted, cursor: "pointer", transition: "all 0.2s" }}>
+                    <input type="radio" checked={isRental} onChange={() => setIsRental(true)} name="purchaseType" style={{ width: 18, height: 18, accentColor: T.green }} /> Rent Service
+                  </label>
+                  {isRental && (
+                    <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, background: "white", padding: "6px 12px", borderRadius: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+                      <span style={{ fontSize: 12, color: T.slate, fontWeight: 700 }}>Plan:</span>
+                      <select value={rentalDuration} onChange={e => setRentalDuration(Number(e.target.value))} style={{ border: "none", outline: "none", fontSize: 14, fontWeight: 800, color: T.green, background: "transparent", cursor: "pointer" }}>
+                        {[1, 3, 6, 12].map(m => <option key={m} value={m}>{m} Months</option>)}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <button
+                onClick={handleAdd}
+                style={{
+                  width: "100%", padding: "15px 0",
+                  background: added ? T.greenLight : `linear-gradient(135deg, ${T.green}, ${T.greenDark})`,
+                  border: added ? `1.5px solid ${T.green}50` : "none",
+                  borderRadius: 14, fontSize: 15, fontWeight: 800,
+                  color: added ? T.green : "white",
+                  cursor: "pointer", fontFamily: "'Poppins', sans-serif",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  boxShadow: added ? "none" : `0 8px 24px ${T.green}40`,
+                  transition: "all 0.25s ease",
+                }}
+              >
+                <Ic name={added ? "Check" : "Cart"} size={18} />
+                {added ? "Added to Cart!" : (isRental ? `Add to Cart — ${formatPrice(product.rentPricePerMonth || Math.floor(product.price * 0.1))}/mo` : "Add to Cart")}
+              </button>
+            </div>
           </div>
+
+          <ReviewSection product={product} user={user} notify={notify} />
         </div>
       </div>
     </div>
@@ -1215,7 +1304,8 @@ function ProductModal({ product, onClose, onAdd }) {
 // ─── CART PAGE ───────────────────────────────────────────────────────────────
 
 function CartPage({ cart, onUpdate, onRemove, user, onCheckout, setPage }) {
-  const total = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const getItemPrice = (product, type) => type === 'rental' ? (product.rentPricePerMonth || Math.floor(product.price * 0.1)) : product.price;
+  const total = cart.reduce((s, i) => s + getItemPrice(i.product, i.type) * i.qty, 0);
 
   if (cart.length === 0) {
     return (
@@ -1254,7 +1344,8 @@ function CartPage({ cart, onUpdate, onRemove, user, onCheckout, setPage }) {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
                   <div>
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: T.navy, fontFamily: "'Poppins', sans-serif" }}>{item.product.name}</h3>
-                    <p style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{item.product.material}</p>
+                    <p style={{ fontSize: 12, color: T.muted, marginTop: 2, marginBottom: 4 }}>{item.product.material}</p>
+                    {item.type === 'rental' && <Badge color={T.amber} bg={T.amberLight}>Rental • 1 Month</Badge>}
                   </div>
                   <button onClick={() => onRemove(item.product.id)} style={{ background: "none", border: "none", color: T.red, cursor: "pointer", padding: 6, borderRadius: 8, display: "flex" }}
                     onMouseOver={e => e.currentTarget.style.background = T.redLight}
@@ -1272,7 +1363,7 @@ function CartPage({ cart, onUpdate, onRemove, user, onCheckout, setPage }) {
                       <Ic name="Plus" size={14} />
                     </button>
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{formatPrice(item.product.price * item.qty)}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{formatPrice(getItemPrice(item.product, item.type) * item.qty)}</div>
                 </div>
               </div>
             </Card>
@@ -1285,8 +1376,8 @@ function CartPage({ cart, onUpdate, onRemove, user, onCheckout, setPage }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingBottom: 20, borderBottom: `1px solid ${T.border}` }}>
             {cart.map(i => (
               <div key={i.product.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                <span style={{ color: T.muted }}>{i.product.name} × {i.qty}</span>
-                <span style={{ fontWeight: 700, color: T.navy }}>{formatPrice(i.product.price * i.qty)}</span>
+                <span style={{ color: T.muted }}>{i.product.name} {i.type === 'rental' ? '(Rent)' : ''} × {i.qty}</span>
+                <span style={{ fontWeight: 700, color: T.navy }}>{formatPrice(getItemPrice(i.product, i.type) * i.qty)}</span>
               </div>
             ))}
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
@@ -1324,7 +1415,8 @@ function CheckoutPage({ cart, user, onPlaceOrder }) {
   const [processing, setProcessing] = useState(false);
   const [showRazorpay, setShowRazorpay] = useState(false);
 
-  const total = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const getItemPrice = (product, type) => type === 'rental' ? (product.rentPricePerMonth || Math.floor(product.price * 0.1)) : product.price;
+  const total = cart.reduce((s, i) => s + getItemPrice(i.product, i.type) * i.qty, 0);
 
   const handlePlaceOrder = () => {
     if (payMethod !== "cod") {
@@ -1473,10 +1565,10 @@ function CheckoutPage({ cart, user, onPlaceOrder }) {
                 <img src={i.product.image} alt="" style={{ width: 52, height: 52, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
                   onError={e => { e.target.src = "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=200"; }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: T.navy, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.product.name}</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: T.navy, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.product.name} {i.type === 'rental' ? '(Rent)' : ''}</p>
                   <p style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>Qty: {i.qty}</p>
                 </div>
-                <span style={{ fontSize: 14, fontWeight: 700, color: T.navy, flexShrink: 0 }}>{formatPrice(i.product.price * i.qty)}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.navy, flexShrink: 0 }}>{formatPrice(getItemPrice(i.product, i.type) * i.qty)}</span>
               </div>
             ))}
           </div>
@@ -1595,7 +1687,7 @@ const downloadInvoice = (order) => {
   }
 };
 
-function OrderSuccess({ order, onContinue, setPage }) {
+function OrderSuccess({ order, onContinue, setPage, setViewProduct }) {
   return (
     <div style={{ maxWidth: 600, margin: "80px auto", padding: "0 32px", textAlign: "center" }}>
       <div style={{ width: 96, height: 96, background: T.greenLight, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px", border: `3px solid ${T.green}30` }}>
@@ -1617,15 +1709,28 @@ function OrderSuccess({ order, onContinue, setPage }) {
               <p style={{ fontWeight: 800, color: T.navy, fontSize: 18 }}>{formatPrice(order.total)}</p>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
             {order.items?.map(({ product, qty }) => (
-              <div key={product.id} style={{ background: T.bg, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, color: T.navy }}>
-                {product.name} ×{qty}
+              <div key={product.id} style={{ background: T.bg, padding: "12px 16px", borderRadius: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                   <p style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{product.name}</p>
+                   <p style={{ fontSize: 11, color: T.muted }}>Qty: {qty}</p>
+                </div>
+                <Btn size="sm" variant="outline" onClick={() => setViewProduct(product)}>
+                  Leave Review
+                </Btn>
               </div>
             ))}
           </div>
         </Card>
       )}
+
+      {/* Review Section - embed for immediate feedback */}
+      <Card hover={false} style={{ padding: 24, marginBottom: 32, textAlign: "left", background: "#f0fdf4" }}>
+        <h4 style={{ fontSize: 16, fontWeight: 800, color: T.green, marginBottom: 8, fontFamily: "'Poppins', sans-serif" }}>Help us grow!</h4>
+        <p style={{ fontSize: 13, color: T.muted, marginBottom: 16 }}>Your feedback helps other eco-conscious shoppers and improves our sustainable products.</p>
+        <Btn full variant="outline" onClick={() => setPage("orders")}>Rate & Review Products in Dashboard</Btn>
+      </Card>
 
       <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
         <Btn variant="outline" size="lg" onClick={() => downloadInvoice(order)} style={{ borderRadius: 100 }}>
@@ -1646,7 +1751,7 @@ function OrderSuccess({ order, onContinue, setPage }) {
 
 const ORDER_STAGES = ["Ordered", "Confirmed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
 
-function OrderTracker({ orders }) {
+function OrderTracker({ orders, setViewProduct }) {
   if (orders.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "120px 20px" }}>
@@ -1716,11 +1821,21 @@ function OrderTracker({ orders }) {
                 <div style={{ background: T.bg, borderRadius: 14, padding: 16 }}>
                   <p style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 12 }}>Shipment Contents</p>
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                    {order.items?.map(({ product, qty }) => (
+                    {order.items?.map(({ product, qty, type }) => (
                       <div key={product.id} style={{ background: T.white, padding: "8px 14px", borderRadius: 10, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 8 }}>
-                        <img src={product.image} alt="" style={{ width: 24, height: 24, borderRadius: 4, objectFit: "cover" }}
-                          onError={e => { e.target.src = "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=100"; }} />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: T.navy }}>{product.name} ×{qty}</span>
+                        <div style={{ position: "relative", cursor: "pointer" }} onClick={() => setViewProduct(product)}>
+                          <img src={product.image} alt="" style={{ width: 28, height: 28, borderRadius: 4, objectFit: "cover" }}
+                            onError={e => { e.target.src = "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=100"; }} />
+                          {type === 'rental' && (
+                            <div style={{ position: "absolute", bottom: -4, right: -4, background: T.amber, color: "white", borderRadius: "50%", width: 14, height: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Ic name="Clock" size={10} />
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>{product.name} ×{qty}</span>
+                          {type === 'rental' && <span style={{ fontSize: 10, color: T.amber, fontWeight: 800 }}>RENTAL</span>}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1825,8 +1940,26 @@ function LoginPage({ setPage }) {
       setLoading(true);
       setError("");
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      setPage("shop"); // route explicitly or naturally if auth hook updates
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, provider);
+      
+      const token = await result.user.getIdToken();
+      const roleToSet = form?.role || 'customer';
+      try {
+        await API.post('/auth/register-firebase', {
+          name: result.user.displayName,
+          email: result.user.email,
+          role: roleToSet
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (e) {
+        console.error("Backend sync error:", e);
+      }
+      
+      if (roleToSet === "supplier") setPage("vendor-home");
+      else if (roleToSet === "admin") setPage("admin-home");
+      else setPage("shop");
     } catch (err) {
       console.error("Google sign in failed:", err);
       setError(err.message || 'Google Sign-In failed or was cancelled.');
@@ -2127,12 +2260,39 @@ function RegisterPage({ setPage }) {
 
 function UserDashboard({ setPage, orders, cart }) {
   const { user } = useAuth();
+  const [crm, setCrm] = useState({ ecoScore: 0, loyaltyPoints: 0, loyaltyTier: "Basic", totalCarbonSaved: 0 });
+  const [rentals, setRentals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import('./services/api').then(({ default: API }) => {
+      Promise.all([
+        API.get('/crm/dashboard').catch(() => ({ data: {} })),
+        API.get('/rentals').catch(() => ({ data: [] }))
+      ]).then(([crmRes, rRes]) => {
+        if(crmRes.data.ecoScore) setCrm(crmRes.data);
+        setRentals(rRes.data || []);
+        setLoading(false);
+      });
+    });
+  }, []);
+
+  const renewRental = (id) => {
+     import('./services/api').then(({ default: API }) => {
+       API.post(`/rentals/${id}/renew`, { additionalMonths: 1 }).then(() => {
+          setRentals(prev => prev.map(r => r._id === id ? { ...r, durationMonths: r.durationMonths + 1 } : r));
+          alert("Rental Renewed for 1 Month!");
+       });
+     });
+  };
+
   const stats = [
-    { icon: "Package", label: "Orders Placed", val: orders.length, color: T.green, page: "orders" },
-    { icon: "Cart", label: "Items in Cart", val: cart.length, color: T.amber, page: "cart" },
-    { icon: "Leaf", label: "CO₂ Offset kg", val: orders.reduce((s, o) => s + Math.round((o.total || 0) / 1000), 0), color: "#84cc16", page: null },
-    { icon: "Award", label: "Eco Points", val: 150 + orders.length * 25, color: T.blue, page: null },
+    { icon: "Package", label: "Orders", val: orders.length, color: T.green, page: "orders" },
+    { icon: "Cart", label: "Active Rentals", val: rentals.length, color: T.amber, page: null },
+    { icon: "Leaf", label: "CO₂ Offset kg", val: crm.totalCarbonSaved || orders.reduce((s, o) => s + Math.round((o.total || 0) / 1000), 0), color: "#84cc16", page: null },
+    { icon: "Award", label: "Eco Points", val: crm.loyaltyPoints || 0, color: T.blue, page: null },
   ];
+
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 32px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 36 }}>
@@ -2140,8 +2300,11 @@ function UserDashboard({ setPage, orders, cart }) {
           {(user?.name?.[0] || "U").toUpperCase()}
         </div>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>Welcome, {user?.name?.split(" ")[0]}!</h2>
-          <p style={{ color: T.muted, fontSize: 14 }}>Your EcoNest dashboard</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>Welcome, {user?.name?.split(" ")[0]}!</h2>
+            <Badge color={T.green}>{crm.loyaltyTier || 'Basic'} Member</Badge>
+          </div>
+          <p style={{ color: T.muted, fontSize: 14 }}>Your EcoNest CRM Dashboard</p>
         </div>
       </div>
 
@@ -2149,32 +2312,47 @@ function UserDashboard({ setPage, orders, cart }) {
         {stats.map(s => (
           <Card key={s.label} style={{ padding: 24, cursor: s.page ? "pointer" : "default" }} onClick={s.page ? () => setPage(s.page) : undefined}>
             <div style={{ width: 44, height: 44, background: s.color + "18", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}><Ic name={s.icon} size={22} color={s.color} /></div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>{s.val}</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>{loading ? "..." : s.val}</div>
             <div style={{ fontSize: 11, color: T.muted, fontWeight: 600, textTransform: "uppercase", marginTop: 4 }}>{s.label}</div>
           </Card>
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 24 }}>
+        {/* Active Rentals */}
         <Card hover={false} style={{ padding: 28 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 16, fontFamily: "'Poppins',sans-serif" }}>Quick Actions</h3>
-          {[["Browse eco products", "shop", "Leaf"], ["View my orders", "orders", "Package"], ["Go to cart", "cart", "Cart"]].map(([l, p, ic]) => (
-            <button key={l} onClick={() => setPage(p)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 15px", borderRadius: 11, border: `1px solid ${T.border}`, background: T.bg, cursor: "pointer", marginBottom: 8, fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 600, color: T.navy, transition: "all 0.2s" }}
-              onMouseOver={e => { e.currentTarget.style.borderColor = T.green; e.currentTarget.style.background = T.greenLight; }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.bg; }}>
-              <Ic name={ic} size={16} color={T.green} />{l}<Ic name="ChevronRight" size={14} color={T.muted} style={{ marginLeft: "auto" }} />
-            </button>
-          ))}
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 16, fontFamily: "'Poppins',sans-serif" }}>Active Rentals</h3>
+          {rentals.length === 0 ? (
+            <p style={{ color: T.muted, fontSize: 14 }}>You don't have any active rentals.</p>
+          ) : (
+             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+               {rentals.filter(r => r.status === 'active' || r.status === 'renewed').map(r => (
+                 <div key={r._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderRadius: 12, border: `1px solid ${T.border}` }}>
+                   <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 8, background: T.bg, display: "flex", alignItems: "center", justifyContent: "center" }}><Ic name="Package" size={18} color={T.green} /></div>
+                      <div>
+                         <p style={{ fontSize: 14, fontWeight: 700, color: T.navy }}>{r.productId?.name || 'Product'}</p>
+                         <p style={{ fontSize: 12, color: T.muted }}>Rented until: {new Date(r.endDate).toLocaleDateString()}</p>
+                      </div>
+                   </div>
+                   <Btn size="sm" onClick={() => renewRental(r._id)}>Renew</Btn>
+                 </div>
+               ))}
+             </div>
+          )}
         </Card>
+
+        {/* Eco Impact */}
         <Card hover={false} style={{ padding: 28 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 16, fontFamily: "'Poppins',sans-serif" }}>Your Eco Impact</h3>
-          <div style={{ background: T.greenLight, borderRadius: 13, padding: "20px", textAlign: "center", border: `1px solid ${T.green}20` }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 16, fontFamily: "'Poppins',sans-serif" }}>Your Eco Impact & Loyalty</h3>
+          <div style={{ background: T.greenLight, borderRadius: 13, padding: "20px", textAlign: "center", border: `1px solid ${T.green}20`, marginBottom: 16 }}>
             <div style={{ fontSize: 40 }}>🌱</div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: T.green, marginTop: 10 }}>
-              {orders.length > 0 ? `${orders.length} order${orders.length > 1 ? "s" : ""} placed!` : "Start your eco journey"}
-            </p>
-            <p style={{ fontSize: 12, color: T.muted, marginTop: 6, lineHeight: 1.6 }}>Every purchase offsets carbon and plants a tree.</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: T.green, marginTop: 10 }}>Current EcoScore: {crm.ecoScore || 0}</p>
+            <p style={{ fontSize: 12, color: T.navyMid, marginTop: 4 }}>You have {crm.loyaltyPoints || 0} Points available.</p>
           </div>
+          <Btn full variant="outline" onClick={() => setPage(user.role === "supplier" ? "vendor-home" : "shop")}>
+            Redeem Points in Shop
+          </Btn>
         </Card>
       </div>
     </div>
@@ -2185,6 +2363,7 @@ function UserDashboard({ setPage, orders, cart }) {
 // VENDOR — VendorDashboard, MyProducts, AddProduct (each as a separate section)
 // ════════════════════════════════════════════════════════════════════════════
 
+
 function VendorDashboard({ setPage }) {
   const { user } = useAuth();
   const [myProducts, setMyProducts] = useState([]);
@@ -2192,10 +2371,7 @@ function VendorDashboard({ setPage }) {
 
   useEffect(() => {
     import('./services/api').then(({ productAPI }) => {
-      productAPI.getVendorProducts()
-        .then(res => setMyProducts(res.data || []))
-        .catch(() => setMyProducts([]))
-        .finally(() => setLoading(false));
+      productAPI.getVendorProducts().then(res => setMyProducts(res.data || [])).catch(() => {}).finally(() => setLoading(false));
     });
   }, []);
 
@@ -2205,7 +2381,6 @@ function VendorDashboard({ setPage }) {
 
   const stats = [
     { icon: "Package", label: "Active Products", val: loading ? "…" : myProducts.length, color: T.green },
-    { icon: "Trend", label: "Total Views", val: "2,421", color: T.blue },
     { icon: "Leaf", label: "Avg Eco Score", val: loading ? "…" : avgEco, color: "#84cc16" },
     { icon: "Award", label: "Certifications", val: "FSC, ISO", color: T.amber },
   ];
@@ -2248,7 +2423,8 @@ function VendorDashboard({ setPage }) {
         </Card>
       </div>
 
-      <Card hover={false} style={{ padding: 26 }}>
+
+      <Card hover={false} style={{ padding: 26, marginTop: 32 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>Recent Products</h3>
           <Btn variant="outline" size="sm" onClick={() => setPage("vendor-products")}>View All</Btn>
@@ -2488,20 +2664,6 @@ function AddProductPage({ setPage }) {
 // ADMIN — Overview, Users, Orders, Vendors (each as a separate page)
 // ════════════════════════════════════════════════════════════════════════════
 
-const MOCK_USERS = [
-  { name: "Priya Sharma", email: "priya@example.com", role: "Customer", orders: 4, joined: "Jan 2026" },
-  { name: "Rahul Verma", email: "rahul@example.com", role: "Customer", orders: 1, joined: "Feb 2026" },
-  { name: "GreenWood Eco", email: "info@greenwood.com", role: "Vendor", orders: 0, joined: "Dec 2025" },
-  { name: "NatureWood Ltd", email: "info@naturewood.com", role: "Vendor", orders: 0, joined: "Mar 2026" },
-];
-
-const MOCK_ORDERS_ADMIN = [
-  { id: "ECN-948271", user: "Priya Sharma", total: 26998, status: "Delivered", items: 2, date: "Mar 10, 2026" },
-  { id: "ECN-384720", user: "Rahul Verma", total: 8499, status: "Shipped", items: 1, date: "Mar 18, 2026" },
-  { id: "ECN-019283", user: "Anjali Gupta", total: 47997, status: "Packed", items: 3, date: "Mar 20, 2026" },
-  { id: "ECN-573841", user: "Vikram Nair", total: 6999, status: "Ordered", items: 1, date: "Mar 21, 2026" },
-];
-
 const STATUS_BADGE = {
   Delivered: { color: T.green, bg: T.greenLight },
   Shipped: { color: T.blue, bg: T.blueLight },
@@ -2509,13 +2671,29 @@ const STATUS_BADGE = {
   Ordered: { color: T.muted, bg: T.bg },
 };
 
-function AdminOverviewPage() {
+function AdminOverviewPage({ data }) {
+  const { users, orders, products, crmStats = {}, loading } = data;
+  
+  if (loading) return <div style={{ padding: "100px 20px", textAlign: "center", color: T.muted }}>Loading Admin Data...</div>;
+
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const revStr = totalRevenue >= 100000 ? `₹${(totalRevenue/100000).toFixed(1)}L` : formatPrice(totalRevenue || 0);
+  
+  const avgEcoScore = products.length 
+    ? (products.reduce((s, p) => s + (Number(p.ecoScore) || 0), 0) / products.length).toFixed(1)
+    : "0";
+
+  const totalViews = crmStats.actions?.view || 0;
+  const totalPurchases = crmStats.actions?.purchase || 0;
+  const conversionRate = totalViews ? Math.round((totalPurchases / totalViews) * 100) : 0;
+
   const stats = [
-    { icon: "Users", label: "Total Users", val: "1,284", color: T.green },
-    { icon: "Package", label: "Total Orders", val: "4,891", color: T.blue },
-    { icon: "Trend", label: "Monthly Revenue", val: "₹38.4L", color: T.green },
-    { icon: "Leaf", label: "Avg Eco Score", val: "87.3", color: "#84cc16" },
-    { icon: "Alert", label: "Pending Reviews", val: "3", color: T.red },
+    { icon: "Users", label: "Total Users", val: (users?.length || 0).toString(), color: T.green },
+    { icon: "Package", label: "Total Orders", val: (orders?.length || 0).toString(), color: T.blue },
+    { icon: "Trend", label: "Total Revenue", val: revStr, color: T.green },
+    { icon: "Leaf", label: "Avg Eco Score", val: avgEcoScore.toString(), color: "#84cc16" },
+    { icon: "Award", label: "Conversion Rate", val: `${conversionRate}%`, color: T.blue },
+    { icon: "Factory", label: "Products", val: (products?.length || 0).toString(), color: T.amber },
   ];
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 32px" }}>
@@ -2528,7 +2706,7 @@ function AdminOverviewPage() {
           <p style={{ color: T.muted, fontSize: 14 }}>EcoNest Living — Global System Administration</p>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 20, marginBottom: 36 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 20, marginBottom: 36 }}>
         {stats.map(s => (
           <Card key={s.label} style={{ padding: 24, textAlign: "center" }}>
             <div style={{ width: 48, height: 48, background: s.color + "15", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Ic name={s.icon} size={22} color={s.color} /></div>
@@ -2538,52 +2716,57 @@ function AdminOverviewPage() {
         ))}
       </div>
       <Card hover={false} style={{ padding: 28 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 800, color: T.navy, marginBottom: 20, fontFamily: "'Poppins',sans-serif" }}>System Activity Log</h3>
-        {[
-          { msg: "Order ECN-019283 placed — ZenSofa Convertible × 2", time: "2h ago", c: T.green },
-          { msg: "New supplier NatureWood Pvt Ltd registered — Pending verification", time: "5h ago", c: T.amber },
-          { msg: "EcoWard Modular restocked (10 units) by Supplier #3", time: "1d ago", c: T.blue },
-          { msg: "Admin approved RecycloDesk Pro listing — Eco Score: 88", time: "2d ago", c: T.green },
-        ].map((a, i, arr) => (
-          <div key={i} style={{ display: "flex", gap: 16, padding: "16px 0", borderBottom: i < arr.length - 1 ? `1px solid ${T.border}` : "none" }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: a.c, marginTop: 7, flexShrink: 0 }} />
-            <div><p style={{ fontSize: 14, color: T.navyMid }}>{a.msg}</p><p style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{a.time}</p></div>
+        <h3 style={{ fontSize: 18, fontWeight: 800, color: T.navy, marginBottom: 20, fontFamily: "'Poppins',sans-serif" }}>Recent Orders</h3>
+        {orders.slice(0, 5).map((o, i, arr) => (
+          <div key={o.orderId || i} style={{ display: "flex", gap: 16, padding: "16px 0", borderBottom: i < arr.length - 1 ? `1px solid ${T.border}` : "none" }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: T.green, marginTop: 7, flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: 14, color: T.navyMid }}>Order {o.orderId || o._id?.slice(-8)} placed — {o.items?.length || 0} item(s)</p>
+              <p style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{new Date(o.createdAt || o.timestamp || Date.now()).toLocaleString()}</p>
+            </div>
           </div>
         ))}
+        {orders.length === 0 && <p style={{ color: T.muted, fontSize: 14 }}>No recent orders.</p>}
       </Card>
     </div>
   );
 }
 
-function AdminUsersPage() {
+function AdminUsersPage({ data }) {
+  const { users, orders } = data;
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 32px" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, marginBottom: 28, fontFamily: "'Poppins',sans-serif" }}>All Users ({MOCK_USERS.length})</h2>
+      <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, marginBottom: 28, fontFamily: "'Poppins',sans-serif" }}>All Users ({(users || []).length})</h2>
       <Card hover={false} style={{ overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: T.bg }}>
-              {["User", "Email", "Role", "Orders", "Joined", "Actions"].map(h => (
+              {["User", "Email", "Role", "Orders", "Loyalty Tier", "Actions"].map(h => (
                 <th key={h} style={{ padding: "14px 20px", textAlign: "left", fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {MOCK_USERS.map((u, i) => (
-              <tr key={i} style={{ borderTop: `1px solid ${T.border}` }}>
+            {(users || []).map((u, i) => {
+              const userOrders = (orders || []).filter(o => o.userId === u._id || o.userId === u.id).length;
+              return (
+              <tr key={u._id || i} style={{ borderTop: `1px solid ${T.border}` }}>
                 <td style={{ padding: "16px 20px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,${T.green},${T.greenDark})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 13, fontWeight: 800 }}>{u.name[0]}</div>
+                    <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,${T.green},${T.greenDark})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 13, fontWeight: 800 }}>{(u.name?.[0] || 'U').toUpperCase()}</div>
                     <span style={{ fontWeight: 700, color: T.navy, fontSize: 14 }}>{u.name}</span>
                   </div>
                 </td>
                 <td style={{ padding: "16px 20px", fontSize: 13, color: T.muted }}>{u.email}</td>
-                <td style={{ padding: "16px 20px" }}><Badge color={u.role === "Vendor" ? T.blue : T.green}>{u.role}</Badge></td>
-                <td style={{ padding: "16px 20px", fontSize: 13, fontWeight: 700 }}>{u.orders}</td>
-                <td style={{ padding: "16px 20px", fontSize: 13, color: T.muted }}>{u.joined}</td>
+                <td style={{ padding: "16px 20px" }}><Badge color={u.role === "supplier" ? T.blue : u.role === "admin" ? T.amber : T.green}>{u.role}</Badge></td>
+                <td style={{ padding: "16px 20px", fontSize: 13, fontWeight: 700 }}>{userOrders || 0}</td>
+                <td style={{ padding: "16px 20px" }}><Badge color={T.amber}>{u.loyaltyTier || 'Basic'}</Badge></td>
                 <td style={{ padding: "16px 20px" }}><Btn variant="outline" size="sm">View</Btn></td>
               </tr>
-            ))}
+            )})}
+            {(users || []).length === 0 && (
+              <tr><td colSpan="6" style={{ padding: "20px", textAlign: "center", color: T.muted }}>No users found.</td></tr>
+            )}
           </tbody>
         </table>
       </Card>
@@ -2591,7 +2774,8 @@ function AdminUsersPage() {
   );
 }
 
-function AdminOrdersPage() {
+function AdminOrdersPage({ data }) {
+  const { orders } = data;
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 32px" }}>
       <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, marginBottom: 28, fontFamily: "'Poppins',sans-serif" }}>All Orders</h2>
@@ -2605,20 +2789,24 @@ function AdminOrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {MOCK_ORDERS_ADMIN.map((o, i) => {
+            {(orders || []).map((o, i) => {
               const sc = STATUS_BADGE[o.status] || { color: T.muted, bg: T.bg };
+              const itemQty = o.items?.reduce((sum, it) => sum + (it.qty || 1), 0) || 0;
               return (
-                <tr key={i} style={{ borderTop: `1px solid ${T.border}` }}>
-                  <td style={{ padding: "16px 18px", fontFamily: "monospace", fontWeight: 700, color: T.green }}>{o.id}</td>
-                  <td style={{ padding: "16px 18px", fontSize: 13, fontWeight: 600, color: T.navy }}>{o.user}</td>
-                  <td style={{ padding: "16px 18px", fontSize: 14, fontWeight: 800 }}>{formatPrice(o.total)}</td>
-                  <td style={{ padding: "16px 18px", fontSize: 13, color: T.muted }}>{o.items} item{o.items > 1 ? "s" : ""}</td>
-                  <td style={{ padding: "16px 18px" }}><span style={{ background: sc.bg, color: sc.color, padding: "5px 12px", borderRadius: 100, fontSize: 12, fontWeight: 700 }}>{o.status}</span></td>
-                  <td style={{ padding: "16px 18px", fontSize: 13, color: T.muted }}>{o.date}</td>
+                <tr key={o._id || o.orderId || i} style={{ borderTop: `1px solid ${T.border}` }}>
+                  <td style={{ padding: "16px 18px", fontFamily: "monospace", fontWeight: 700, color: T.green }}>{o.orderId || o._id?.slice(-8)}</td>
+                  <td style={{ padding: "16px 18px", fontSize: 13, fontWeight: 600, color: T.navy }}>User {o.userId?.slice(-6) || "Guest"}</td>
+                  <td style={{ padding: "16px 18px", fontSize: 14, fontWeight: 800 }}>{formatPrice(o.total || 0)}</td>
+                  <td style={{ padding: "16px 18px", fontSize: 13, color: T.muted }}>{itemQty} item{itemQty !== 1 ? "s" : ""}</td>
+                  <td style={{ padding: "16px 18px" }}><span style={{ background: sc.bg, color: sc.color, padding: "5px 12px", borderRadius: 100, fontSize: 12, fontWeight: 700 }}>{o.status || 'Ordered'}</span></td>
+                  <td style={{ padding: "16px 18px", fontSize: 13, color: T.muted }}>{new Date(o.createdAt || o.timestamp || Date.now()).toLocaleDateString()}</td>
                   <td style={{ padding: "16px 18px" }}><Btn variant="outline" size="sm">Details</Btn></td>
                 </tr>
               );
             })}
+            {(orders || []).length === 0 && (
+              <tr><td colSpan="7" style={{ padding: "20px", textAlign: "center", color: T.muted }}>No orders found.</td></tr>
+            )}
           </tbody>
         </table>
       </Card>
@@ -2626,37 +2814,249 @@ function AdminOrdersPage() {
   );
 }
 
-function AdminVendorsPage() {
-  const [pending] = useState([{ name: "NatureWood Pvt Ltd", email: "info@naturewood.com", certs: "FSC, ISO14001" }]);
+function AdminVendorsPage({ data }) {
+  const { vendors, products } = data;
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "48px 32px" }}>
       <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, marginBottom: 28, fontFamily: "'Poppins',sans-serif" }}>Vendor Management</h2>
-      <h3 style={{ fontSize: 17, fontWeight: 800, color: T.navy, marginBottom: 16, fontFamily: "'Poppins',sans-serif" }}>Verification Queue</h3>
-      {pending.map((s, i) => (
-        <Card key={i} hover={false} style={{ padding: 22, display: "flex", alignItems: "center", gap: 18, marginBottom: 14, border: `1.5px solid ${T.amber}40` }}>
-          <div style={{ width: 48, height: 48, background: T.amberLight, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ic name="Factory" size={22} color={T.amber} /></div>
-          <div style={{ flex: 1 }}><p style={{ fontWeight: 800, color: T.navy, fontSize: 14 }}>{s.name}</p><p style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{s.email} · Certs: {s.certs}</p></div>
-          <Badge color={T.amber}>Pending</Badge>
-          <div style={{ display: "flex", gap: 8 }}><Btn size="sm">Approve</Btn><Btn variant="danger" size="sm">Reject</Btn></div>
-        </Card>
-      ))}
-      <h3 style={{ fontSize: 17, fontWeight: 800, color: T.navy, margin: "32px 0 16px", fontFamily: "'Poppins',sans-serif" }}>Active Vendors</h3>
-      {[
-        { name: "GreenWood Eco Suppliers", email: "info@greenwood.com", products: 4, certs: "FSC, ISO14001" },
-        { name: "EcoHome Crafts", email: "info@ecohome.com", products: 2, certs: "FSC" },
-        { name: "ReNest Makers", email: "info@renest.com", products: 2, certs: "ISO14001, GreenGuard" },
-      ].map((v, i) => (
-        <Card key={i} hover={false} style={{ padding: 22, display: "flex", alignItems: "center", gap: 18, marginBottom: 12 }}>
+      <h3 style={{ fontSize: 17, fontWeight: 800, color: T.navy, margin: "16px 0 16px", fontFamily: "'Poppins',sans-serif" }}>Active Vendors</h3>
+      {(vendors || []).map((v, i) => {
+        const vendorProducts = (products || []).filter(p => p.vendorName === v.name || p.vendorId === v._id || p.vendorId === v.id).length;
+        return (
+        <Card key={v._id || i} hover={false} style={{ padding: 22, display: "flex", alignItems: "center", gap: 18, marginBottom: 12 }}>
           <div style={{ width: 48, height: 48, background: T.greenLight, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center" }}><Ic name="Factory" size={22} color={T.green} /></div>
-          <div style={{ flex: 1 }}><p style={{ fontWeight: 800, color: T.navy, fontSize: 14 }}>{v.name}</p><p style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{v.email} · {v.products} products · {v.certs}</p></div>
+          <div style={{ flex: 1 }}><p style={{ fontWeight: 800, color: T.navy, fontSize: 14 }}>{v.name}</p><p style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{v.email} · {vendorProducts} products</p></div>
           <Badge color={T.green}>Verified</Badge>
           <Btn variant="outline" size="sm">Manage</Btn>
         </Card>
-      ))}
+      )})}
+      {(vendors || []).length === 0 && <p style={{ color: T.muted }}>No active vendors found.</p>}
     </div>
   );
 }
 
+
+function AdminCRMPage({ data }) {
+  const { crmStats = {}, loading } = data;
+  const funnel = crmStats.funnel || { acquisition: 0, engagement: 0, conversion: 0, loyalty: 0 };
+  const leaderboard = crmStats.leaderboard || [];
+
+  const STAGES = [
+    { label: "Acquisition", val: funnel.acquisition, desc: "Total Signed Users", icon: "Users", color: T.blue },
+    { label: "Engagement", val: funnel.engagement, desc: "Browsing & Active", icon: "Leaf", color: T.green },
+    { label: "Conversion", val: funnel.conversion, desc: "Purchase/Orders", icon: "Cart", color: T.amber },
+    { label: "Retention", val: funnel.retention, desc: "Repeat Customers", icon: "Trend", color: "#84cc16" },
+    { label: "Loyalty", val: funnel.loyalty, desc: "Tier Members", icon: "Award", color: T.red },
+  ];
+
+  if (loading) return <div style={{ padding: "100px", textAlign: "center", color: T.muted }}>Loading CRM Data...</div>;
+
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 32px" }}>
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: T.navy, fontFamily: "'Poppins', sans-serif" }}>Customer Lifecycle CRM</h2>
+        <p style={{ color: T.muted, fontSize: 14 }}>Track the journey from new visitor to eco-loyalist.</p>
+      </div>
+
+      {/* Lifecycle Funnel */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16, marginBottom: 48 }}>
+        {STAGES.map((s, i) => (
+          <Card key={s.label} style={{ padding: 24, position: "relative" }}>
+            <div style={{ position: "absolute", top: 12, right: 12, fontSize: 32, fontWeight: 900, color: s.color + "15" }}>{i + 1}</div>
+            <div style={{ width: 44, height: 44, background: s.color + "15", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <Ic name={s.icon} size={20} color={s.color} />
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: T.navy }}>{s.val}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: s.color, marginTop: 4 }}>{s.label}</div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{s.desc}</div>
+          </Card>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 32 }}>
+        {/* Loyalty Leaderboard */}
+        <Card style={{ padding: 28 }} hover={false}>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: T.navy, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+            <Ic name="Award" size={20} color={T.amber} /> Top Eco-Loyal Customers
+          </h3>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: T.bg }}>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: T.muted }}>CUSTOMER</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: T.muted }}>POINTS</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: T.muted }}>TIER</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaderboard.map((u, i) => (
+                <tr key={i} style={{ borderTop: `1px solid ${T.border}` }}>
+                  <td style={{ padding: "14px 16px" }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{u.name}</p>
+                    <p style={{ fontSize: 11, color: T.muted }}>{u.email}</p>
+                  </td>
+                  <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 800, color: T.green }}>{u.points}</td>
+                  <td style={{ padding: "14px 16px" }}><Badge color={T.amber}>{u.tier}</Badge></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+
+        {/* CRM Activity Summary */}
+        <Card style={{ padding: 28 }} hover={false}>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: T.navy, marginBottom: 20 }}>Growth Events</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {Object.entries(crmStats.actions || {}).slice(0, 5).map(([act, count]) => (
+              <div key={act} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.bg, borderRadius: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.navyMid, textTransform: "capitalize" }}>{act.replace(/_/g, " ")}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: T.green }}>{count} items</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+    </div>
+  );
+}
+
+function AdminReviewsPage() {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    API.get('/reviews/all')
+      .then(res => setReviews(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 32px" }}>
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: T.navy, fontFamily: "'Poppins', sans-serif" }}>Global Feedback</h2>
+        <p style={{ color: T.muted }}>Monitor what customers are saying about EcoNest products.</p>
+      </div>
+
+      {loading ? (
+        <p>Loading feedback...</p>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 24 }}>
+          {reviews.map(r => (
+            <Card key={r._id} style={{ padding: 24 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                <span style={{ fontWeight: 800, color: T.navy }}>{r.userName}</span>
+                <div style={{ display: "flex", gap: 3 }}>
+                  {[1,2,3,4,5].map(s => <Ic key={s} name="Star" size={12} color={s <= r.rating ? T.amber : T.borderMid} />)}
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: T.muted, marginBottom: 14 }}>Ref: {r.productId}</p>
+              <p style={{ fontSize: 14, color: T.navyMid, lineHeight: 1.6 }}>"{r.comment}"</p>
+              <p style={{ fontSize: 11, color: T.borderMid, marginTop: 12 }}>{new Date(r.createdAt).toLocaleString()}</p>
+            </Card>
+          ))}
+          {reviews.length === 0 && <p style={{ color: T.muted }}>No feedback received yet.</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReviewSection({ product, user, notify }) {
+  const [reviews, setReviews] = useState([]);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const fetchReviews = async () => {
+    if (!product) return;
+    try {
+      const res = await API.get(`/reviews/${product._id || product.id}`);
+      setReviews(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch reviews:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [product]);
+
+  const handleSubmit = async () => {
+    if (!comment) return notify("Please add a comment.");
+    setLoading(true);
+    try {
+      await API.post('/reviews', { 
+        productId: product._id || product.id, 
+        rating, 
+        comment 
+      });
+      setComment("");
+      setRating(5);
+      fetchReviews();
+      notify("Review submitted! Thank you.");
+    } catch (err) {
+      const errMsg = err.response?.data?.error || "Failed to submit review.";
+      notify(errMsg);
+      console.error("Submission error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 40, borderTop: `1px solid ${T.border}`, paddingTop: 32 }}>
+      <h3 style={{ fontSize: 18, fontWeight: 800, color: T.navy, marginBottom: 24, fontFamily: "'Poppins', sans-serif" }}>Customer Feedback</h3>
+      
+      {user && (
+        <div style={{ background: T.bg, padding: 24, borderRadius: 20, marginBottom: 32 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: T.navyMid, marginBottom: 16 }}>Write a Review</p>
+          <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+            {[1,2,3,4,5].map(s => (
+              <button 
+                key={s} 
+                onClick={() => setRating(s)}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              >
+                <Ic name="Star" size={24} color={s <= rating ? T.amber : T.borderMid} />
+              </button>
+            ))}
+          </div>
+          <textarea 
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="What do you think about this eco-friendly piece?"
+            style={{ 
+              width: "100%", height: 80, padding: 14, borderRadius: 14, 
+              border: `2px solid ${T.border}`, outline: "none", 
+              fontSize: 14, color: T.navy, background: "white",
+              resize: "none", marginBottom: 16, fontFamily: "'Inter', sans-serif"
+            }}
+          />
+          <Btn size="md" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Posting..." : "Submit Review"}
+          </Btn>
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        {reviews.map(r => (
+          <div key={r._id} style={{ paddingBottom: 24, borderBottom: `1px solid ${T.border}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <p style={{ fontWeight: 800, fontSize: 14, color: T.navy }}>{r.userName}</p>
+              <div style={{ display: "flex", gap: 4 }}>
+                {[1,2,3,4,5].map(s => <Ic key={s} name="Star" size={14} color={s <= r.rating ? T.amber : T.borderMid} />)}
+              </div>
+            </div>
+            <p style={{ fontSize: 14, color: T.slate, lineHeight: 1.6 }}>{r.comment}</p>
+            <p style={{ fontSize: 11, color: T.muted, marginTop: 8 }}>{new Date(r.createdAt).toLocaleDateString()}</p>
+          </div>
+        ))}
+        {reviews.length === 0 && <p style={{ color: T.muted, textAlign: "center", padding: "40px 0" }}>No reviews yet. Be the first to share your thoughts!</p>}
+      </div>
+    </div>
+  );
+}
 
 // ─── FOOTER ──────────────────────────────────────────────────────────────────
 
@@ -2742,6 +3142,10 @@ function AppInner() {
 
   const [cart, setCart] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [adminData, setAdminData] = useState({ 
+    users: [], orders: [], products: [], vendors: [], crmStats: {}, loading: true 
+  });
+  const [viewProduct, setViewProduct] = useState(null);
   const [toast, setToast] = useState(null);
 
   const notify = useCallback((msg) => {
@@ -2750,11 +3154,13 @@ function AppInner() {
   }, []);
 
   const formatCartPayload = (cartItems) => cartItems.map(i => ({
-    productId: i.product.id ? i.product.id.toString() : "unknown",
+    productId: i.product.id ? i.product.id.toString() : i.product._id?.toString() || "unknown",
     name: i.product.name,
     price: i.product.price,
     image: i.product.image,
-    qty: i.qty
+    qty: i.qty,
+    isRental: i.type === 'rental',
+    rentalDuration: i.type === 'rental' ? 1 : 0
   }));
 
   const parseOrderFromBackend = (order) => ({
@@ -2763,7 +3169,8 @@ function AppInner() {
     timestamp: new Date(order.createdAt).getTime(),
     items: (order.items || []).map(i => ({
       product: PRODUCTS.find(p => p.id.toString() === i.productId) || { id: i.productId, name: i.name, price: i.price, image: i.image },
-      qty: i.qty
+      qty: i.qty,
+      type: i.isRental ? 'rental' : 'purchase'
     }))
   });
 
@@ -2775,7 +3182,7 @@ function AppInner() {
             const fullProduct = PRODUCTS.find(p => p.id.toString() === item.productId) || {
               id: item.productId, name: item.name, price: item.price, image: item.image, accentColor: T.greenLight
             };
-            return { product: fullProduct, qty: item.qty };
+            return { product: fullProduct, qty: item.qty, type: item.isRental ? 'rental' : 'purchase' };
           });
           setCart(loadedCart);
         }
@@ -2788,18 +3195,41 @@ function AppInner() {
     }
   }, [user]);
 
-  const addToCart = useCallback((product) => {
+  useEffect(() => {
+    if (user && (user.role === "admin" || user.role === "supplier")) {
+      setAdminData(prev => ({ ...prev, loading: true }));
+      Promise.all([
+        API.get('/users').catch(() => ({ data: [] })),
+        API.get('/orders/all').catch(() => ({ data: [] })),
+        API.get('/products').catch(() => ({ data: [] })),
+        API.get('/crm/admin/stats').catch(() => ({ data: {} }))
+      ]).then(([usersRes, ordersRes, productsRes, crmRes]) => {
+        const users = usersRes.data || [];
+        const rawOrders = ordersRes.data || [];
+        const products = productsRes.data || [];
+        const crmStats = crmRes.data || {};
+        
+        const vendors = users.filter(u => u.role === "supplier");
+        const orders = rawOrders.map(parseOrderFromBackend);
+        
+        setAdminData({ users, orders, products, vendors, crmStats, loading: false });
+      });
+    }
+  }, [user]);
+
+  const addToCart = useCallback((product, type = 'purchase') => {
     if (!user) { setPage("login"); return; }
     if (user.role !== "customer") { notify("Only customers can add to cart."); return; }
     setCart(prev => {
-      const ex = prev.find(i => i.product.id === product.id);
+      const cartId = `${product.id}-${type}`;
+      const ex = prev.find(i => `${i.product.id}-${i.type}` === cartId);
       const newCart = ex 
-        ? prev.map(i => i.product.id === product.id ? { ...i, qty: i.qty + 1 } : i)
-        : [...prev, { product, qty: 1 }];
+        ? prev.map(i => `${i.product.id}-${i.type}` === cartId ? { ...i, qty: i.qty + 1 } : i)
+        : [...prev, { product, qty: 1, type }];
       API.post('/cart', { items: formatCartPayload(newCart) }).catch(console.error);
       return newCart;
     });
-    notify(`${product.name} added to cart!`);
+    notify(`${product.name} (${type}) added to cart!`);
   }, [user, notify]);
 
   const updateCart = useCallback((pid, qty) => {
@@ -2836,6 +3266,17 @@ function AppInner() {
         paymentMethod: orderDetails.payMethod
       };
       const res = await API.post('/orders', orderPayload);
+      
+      // Handle rentals if any
+      const rentals = orderDetails.items.filter(i => i.type === 'rental');
+      for (const r of rentals) {
+        await API.post('/rentals', { 
+          productId: r.product.id?.toString() || r.product._id?.toString(),
+          durationMonths: 1,
+          startDate: new Date()
+        }).catch(console.error);
+      }
+
       setOrders(prev => [parseOrderFromBackend(res.data), ...prev]);
       setCart([]);
       await API.post('/cart', { items: [] }).catch(console.error);
@@ -2883,7 +3324,7 @@ function AppInner() {
             <div>
               <HeroSection onShop={() => document.querySelector("[data-catalog]")?.scrollIntoView({ behavior: "smooth" })} />
               <SustainabilitySection />
-              <div data-catalog=""><ProductCatalog onAddToCart={addToCart} /></div>
+              <div data-catalog=""><ProductCatalog onAddToCart={addToCart} notify={notify} setViewProduct={setViewProduct} /></div>
             </div>
           </ProtectedPage>
         )}
@@ -2904,19 +3345,19 @@ function AppInner() {
         )}
         {page === "success" && (
           <ProtectedPage allowedRole="customer" setPage={setPage}>
-            <OrderSuccess order={orders[0]} onContinue={() => setPage("shop")} setPage={setPage} />
+            <OrderSuccess order={orders[0]} onContinue={() => setPage("shop")} setPage={setPage} setViewProduct={setViewProduct} />
           </ProtectedPage>
         )}
         {page === "orders" && (
           <ProtectedPage allowedRole="customer" setPage={setPage}>
-            <OrderTracker orders={orders} />
+            <OrderTracker orders={orders} setViewProduct={setViewProduct} />
           </ProtectedPage>
         )}
 
         {/* ── VENDOR PAGES ─────────────────────────────────────────── */}
         {page === "vendor-home" && (
           <ProtectedPage allowedRole="supplier" setPage={setPage}>
-            <VendorDashboard setPage={setPage} />
+            <VendorDashboard setPage={setPage} notify={notify} />
           </ProtectedPage>
         )}
         {page === "vendor-products" && (
@@ -2933,28 +3374,48 @@ function AppInner() {
         {/* ── ADMIN PAGES ──────────────────────────────────────────── */}
         {page === "admin-home" && (
           <ProtectedPage allowedRole="admin" setPage={setPage}>
-            <AdminOverviewPage />
+            <AdminOverviewPage data={adminData} />
           </ProtectedPage>
         )}
         {page === "admin-users" && (
           <ProtectedPage allowedRole="admin" setPage={setPage}>
-            <AdminUsersPage />
+            <AdminUsersPage data={adminData} />
           </ProtectedPage>
         )}
         {page === "admin-orders" && (
           <ProtectedPage allowedRole="admin" setPage={setPage}>
-            <AdminOrdersPage />
+            <AdminOrdersPage data={adminData} />
           </ProtectedPage>
         )}
         {page === "admin-vendors" && (
           <ProtectedPage allowedRole="admin" setPage={setPage}>
-            <AdminVendorsPage />
+            <AdminVendorsPage data={adminData} />
+          </ProtectedPage>
+        )}
+        {page === "admin-reviews" && (
+          <ProtectedPage allowedRole="admin" setPage={setPage}>
+            <AdminReviewsPage />
+          </ProtectedPage>
+        )}
+        {page === "admin-crm" && (
+          <ProtectedPage allowedRole="admin" setPage={setPage}>
+            <AdminCRMPage data={adminData} />
           </ProtectedPage>
         )}
 
       </main>
 
       {!noFooterPages.includes(page) && <Footer setPage={setPage} />}
+
+
+      {viewProduct && (
+        <ProductModal 
+          product={viewProduct} 
+          onClose={() => setViewProduct(null)} 
+          onAdd={addToCart} 
+          notify={notify} 
+        />
+      )}
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
     </div>

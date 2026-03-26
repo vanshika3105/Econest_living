@@ -69,8 +69,7 @@ export function AuthProvider({ children }) {
             // Try to log them in with the password they provided instead
             result = await signInWithEmailAndPassword(auth, email, password);
           } catch (loginErr) {
-            // If the password doesn't match, they really need to go to the login screen
-            throw new Error('Email is already registered. If this is your account, please go to the Sign In page.');
+            throw new Error('This email is already registered. If you signed up with Google, use Google Sign-In.');
           }
         } else {
           throw err;

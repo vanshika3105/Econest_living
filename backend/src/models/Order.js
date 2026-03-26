@@ -5,7 +5,9 @@ const orderItemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
   image: { type: String, required: true },
-  qty: { type: Number, required: true }
+  qty: { type: Number, required: true },
+  isRental: { type: Boolean, default: false },
+  rentalDuration: { type: Number, default: 0 } // in months
 });
 
 const orderSchema = new mongoose.Schema({

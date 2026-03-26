@@ -5,7 +5,9 @@ const cartItemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
   image: { type: String, required: true },
-  qty: { type: Number, required: true, min: 1 }
+  qty: { type: Number, required: true, min: 1 },
+  isRental: { type: Boolean, default: false },
+  rentalDuration: { type: Number, default: 0 } // in months
 });
 
 const cartSchema = new mongoose.Schema({

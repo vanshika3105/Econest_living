@@ -11,6 +11,15 @@ const productSchema = new mongoose.Schema({
     required: [true, 'Price is required'],
     min: 0,
   },
+  isRentable: {
+    type: Boolean,
+    default: false,
+  },
+  rentPricePerMonth: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
   category: {
     type: String,
     required: [true, 'Category is required'],

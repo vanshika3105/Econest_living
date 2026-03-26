@@ -78,6 +78,9 @@ export const registerFirebase = async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Database indicates email is already in use' });
+    }
     res.status(500).json({ error: error.message });
   }
 };

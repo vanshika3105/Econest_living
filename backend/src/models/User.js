@@ -24,6 +24,31 @@ const userSchema = new mongoose.Schema({
     enum: ['customer', 'supplier', 'admin'],
     default: 'customer',
   },
+  ecoScore: {
+    type: Number,
+    default: 0,
+  },
+  loyaltyPoints: {
+    type: Number,
+    default: 0,
+  },
+  loyaltyTier: {
+    type: String,
+    enum: ['Basic', 'Premium', 'Green Member'],
+    default: 'Basic',
+  },
+  totalCarbonSaved: {
+    type: Number,
+    default: 0,
+  },
+  isSubscriber: {
+    type: Boolean,
+    default: false,
+  },
+  customizationCount: {
+    type: Number,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
