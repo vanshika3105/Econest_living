@@ -16,25 +16,72 @@ const ROLE_META = {
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
 
 const T = {
-  green: "#16a34a",
-  greenDark: "#15803d",
-  greenLight: "#f0fdf4",
-  greenMid: "#dcfce7",
+  green: "#059669",      // Refined Emerald
+  greenDark: "#065f46",
+  greenLight: "#ecfdf5",
+  greenMid: "#d1fae5",
   navy: "#0f172a",
   navyMid: "#1e293b",
   slate: "#475569",
-  muted: "#64748b",
-  border: "#f1f5f9",
+  muted: "#94a3b8",      // Lighter muted for premium feel
+  border: "rgba(226, 232, 240, 0.6)", 
   borderMid: "#e2e8f0",
-  bg: "#f8fafc",
+  bg: "#fcfdfe",         // Cleaner off-white
   white: "#ffffff",
-  red: "#ef4444",
-  redLight: "#fef2f2",
+  red: "#f43f5e",
+  redLight: "#fff1f2",
   amber: "#f59e0b",
-  amberLight: "#fefce8",
-  blue: "#3b82f6",
+  amberLight: "#fffbeb",
+  blue: "#2563eb",
   blueLight: "#eff6ff",
+  glass: "rgba(255, 255, 255, 0.7)",
+  glassDark: "rgba(15, 23, 42, 0.8)",
+  shadowSubtle: "0 2px 10px rgba(0,0,0,0.03)",
+  shadowPremium: "0 20px 50px -12px rgba(0,0,0,0.08), 0 10px 20px -5px rgba(0,0,0,0.03)",
+  ease: "cubic-bezier(0.4, 0, 0.2, 1)",
 };
+
+const GlobalStyles = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+    
+    * { 
+      box-sizing: border-box; 
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: ${T.bg};
+      color: ${T.navy};
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: ${T.bg}; }
+    ::-webkit-scrollbar-thumb { 
+      background: #cbd5e1; 
+      border-radius: 10px; 
+      border: 2px solid ${T.bg};
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .glass-effect {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: ${T.glass};
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  `}</style>
+);
 
 // ─── ICONS ──────────────────────────────────────────────────────────────────
 
@@ -408,6 +455,7 @@ function Navbar({ page, setPage, cart }) {
     admin: [
       { id: "admin-home", label: "Overview", icon: "BarChart" },
       { id: "admin-crm", label: "CRM Mode", icon: "Award" },
+      { id: "admin-security", label: "Security SOC", icon: "Shield" },
       { id: "admin-reviews", label: "Global Feedback", icon: "Star" },
       { id: "admin-users", label: "Users", icon: "Users" },
       { id: "admin-orders", label: "Orders", icon: "Package" },
@@ -422,51 +470,80 @@ function Navbar({ page, setPage, cart }) {
   const homeId = role === "supplier" ? "vendor-home" : role === "admin" ? "admin-home" : "shop";
 
   return (
-    <nav style={{ position: "sticky", top: 0, zIndex: 1000, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${T.border}` }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px", height: 70, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
+    <nav className="glass-effect" style={{ 
+      position: "sticky", top: 0, zIndex: 1000, 
+      height: 80, display: "flex", alignItems: "center",
+      borderBottom: `1px solid ${T.border}`,
+      boxShadow: T.shadowSubtle,
+    }}>
+      <div style={{ maxWidth: 1400, width: "100%", margin: "0 auto", padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 
         {/* Logo */}
-        <div onClick={() => setPage(homeId)} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flexShrink: 0 }}>
-          <div style={{ width: 36, height: 36, background: T.greenLight, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Ic name="Leaf" size={18} color={T.green} />
+        <div onClick={() => setPage(homeId)} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", transition: "transform 0.2s ease" }}
+             onMouseOver={e => e.currentTarget.style.transform = "scale(1.02)"}
+             onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}>
+          <div style={{ 
+            width: 44, height: 44, background: "linear-gradient(135deg, #059669 0%, #10b981 100%)", 
+            borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 8px 16px rgba(5, 150, 105, 0.2)"
+          }}>
+            <Ic name="Leaf" size={24} color="#fff" />
           </div>
-          <span style={{ fontSize: 22, fontWeight: 900, color: T.navy, fontFamily: "'Poppins', sans-serif", letterSpacing: -0.5 }}>EcoNest</span>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: T.navy, fontFamily: "'Poppins', sans-serif", lineHeight: 1.1, letterSpacing: "-0.02em" }}>EcoNest</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: T.green, letterSpacing: "0.1em", textTransform: "uppercase" }}>Living</span>
+          </div>
           {user && (
-            <span style={{ fontSize: 10, fontWeight: 800, background: meta.bg, color: meta.color, padding: "3px 10px", borderRadius: 100, border: `1px solid ${meta.color}25` }}>
+            <span style={{ 
+              fontSize: 9, fontWeight: 800, background: meta.bg, color: meta.color, 
+              padding: "4px 10px", borderRadius: 100, border: `1px solid ${meta.color}20`,
+              textTransform: "uppercase", marginLeft: 4
+            }}>
               {meta.label}
             </span>
           )}
         </div>
 
-        {/* Nav links */}
-        <div style={{ display: "flex", alignItems: "center", gap: 2, flex: 1, justifyContent: "center" }} className="desktop-nav">
+        {/* Desktop Nav */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }} className="desktop-nav">
           {links.map(l => (
             <button key={l.id} onClick={() => setPage(l.id)} style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "8px 16px", borderRadius: 10, border: "none",
-              background: page === l.id ? (meta.bg || T.greenLight) : "transparent",
-              color: page === l.id ? (meta.color || T.green) : T.muted,
-              fontSize: 14, fontWeight: 700, cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif", transition: "all 0.2s",
-            }}>
-              <Ic name={l.icon} size={14} />{l.label}
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "10px 20px", borderRadius: 12, border: "none",
+              background: page === l.id ? T.greenLight : "transparent",
+              color: page === l.id ? T.green : T.slate,
+              fontSize: 14, fontWeight: 600, cursor: "pointer",
+              fontFamily: "'Inter', sans-serif", transition: "all 0.3s ease",
+            }}
+            onMouseOver={e => { if(page !== l.id) e.currentTarget.style.background = "rgba(0,0,0,0.03)"; }}
+            onMouseOut={e => { if(page !== l.id) e.currentTarget.style.background = "transparent"; }}
+            >
+              <Ic name={l.icon} size={16} />
+              {l.label}
             </button>
           ))}
         </div>
 
-        {/* Right side */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-          {/* Cart badge — customers only */}
+        {/* Right side Actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {role === "customer" && (
             <button onClick={() => setPage("cart")} style={{
-              position: "relative", background: page === "cart" ? T.greenLight : T.bg,
-              border: "none", borderRadius: 12, width: 44, height: 44,
+              position: "relative", background: page === "cart" ? T.greenLight : "rgba(0,0,0,0.03)",
+              border: "none", borderRadius: 14, width: 48, height: 48,
               display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", color: page === "cart" ? T.green : T.muted, transition: "all 0.2s",
-            }}>
-              <Ic name="Cart" size={20} />
+              cursor: "pointer", color: page === "cart" ? T.green : T.navyMid, transition: "all 0.3s ease",
+            }}
+            onMouseOver={e => e.currentTarget.style.transform = "translateY(-2px)"}
+            onMouseOut={e => e.currentTarget.style.transform = "translateY(0)"}
+            >
+              <Ic name="Cart" size={22} />
               {cartQty > 0 && (
-                <span style={{ position: "absolute", top: -4, right: -4, background: T.red, color: "white", fontSize: 10, fontWeight: 800, width: 20, height: 20, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid white" }}>{cartQty}</span>
+                <span style={{ 
+                  position: "absolute", top: -6, right: -6, background: T.red, color: "white", 
+                  fontSize: 10, fontWeight: 800, minWidth: 22, height: 22, padding: "0 6px",
+                  borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", 
+                  border: "3px solid white", boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+                }}>{cartQty}</span>
               )}
             </button>
           )}
@@ -724,256 +801,147 @@ function ProductCard({ product, onAdd, onView }) {
     e.stopPropagation();
     onAdd(product);
     setAdded(true);
-    setTimeout(() => setAdded(false), 1800);
+    setTimeout(() => setAdded(false), 2000);
   };
 
-  const accent = product.accentColor || T.greenLight;
   const isLowStock = product.stock <= 5;
+  const accent = product.accentColor || T.greenLight;
 
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <div 
+      className="product-card-premium"
       style={{
-        background: T.white,
-        borderRadius: 22,
-        overflow: "hidden",
-        border: `1px solid ${hovered ? T.green + "40" : T.border}`,
-        transition: "all 0.3s cubic-bezier(0.25,0.46,0.45,0.94)",
-        display: "flex",
-        flexDirection: "column",
-        boxShadow: hovered
-          ? "0 20px 48px rgba(22,163,74,0.12), 0 8px 16px rgba(0,0,0,0.06)"
-          : "0 2px 10px rgba(0,0,0,0.05)",
-        transform: hovered ? "translateY(-6px)" : "translateY(0)",
-        position: "relative",
+        background: T.white, borderRadius: 24, overflow: "hidden",
+        border: `1px solid ${T.border}`, boxShadow: T.shadowSubtle,
+        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        display: "flex", flexDirection: "column", 
+        animation: "fadeIn 0.6s ease-out forwards",
+        position: "relative", cursor: "default"
       }}
+      onMouseOver={e => { e.currentTarget.style.boxShadow = T.shadowPremium; e.currentTarget.style.transform = "translateY(-6px)"; setHovered(true); }}
+      onMouseOut={e => { e.currentTarget.style.boxShadow = T.shadowSubtle; e.currentTarget.style.transform = ""; setHovered(false); }}
     >
-      {/* ── Image area ── */}
-      <div style={{ position: "relative", height: 240, overflow: "hidden", cursor: "pointer" }}
-        onClick={() => onView(product)}>
-
-        <ProductImage
-          src={product.image}
-          fallback={product.imageFallback}
+      {/* Image Area */}
+      <div style={{ position: "relative", height: 260, overflow: "hidden", background: T.bg }}>
+        <img
+          src={product.image || (product.images && product.images[0])}
           alt={product.name}
-          height={240}
-          accent={product.accentColor}
-          label={product.category}
+          style={{
+            width: "100%", height: "100%", objectFit: "cover",
+            transition: "transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+            transform: hovered ? "scale(1.08)" : "scale(1)",
+          }}
+          onError={e => { e.target.src = product.imageFallback || makeSVGPlaceholder(product.name, accent); }}
         />
-
-        {/* Zoom overlay on hover */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(0,0,0,0.22) 0%, transparent 55%)",
-          transition: "opacity 0.3s",
-          opacity: hovered ? 1 : 0,
-        }} />
-
-        {/* Quick-view button on hover */}
-        <div style={{
-          position: "absolute", inset: 0,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          opacity: hovered ? 1 : 0, transition: "opacity 0.25s ease",
-          pointerEvents: hovered ? "auto" : "none",
-        }}>
-          <button
-            onClick={(e) => { e.stopPropagation(); onView(product); }}
-            style={{
-              background: "rgba(255,255,255,0.95)",
-              border: "none", borderRadius: 12,
-              padding: "10px 20px", fontSize: 13, fontWeight: 700,
-              color: T.navy, cursor: "pointer",
-              display: "flex", alignItems: "center", gap: 6,
-              backdropFilter: "blur(8px)",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-              fontFamily: "'Poppins', sans-serif",
-              transform: hovered ? "translateY(0)" : "translateY(8px)",
-              transition: "transform 0.25s ease",
-            }}
-          >
-            <Ic name="Eye" size={15} color={T.green} /> Quick View
-          </button>
-        </div>
-
-        {/* Tag badge */}
-        {product.tag && (
-          <div style={{
-            position: "absolute", top: 14, left: 14,
-            background: T.green,
-            color: "white", fontSize: 10, fontWeight: 800,
-            padding: "5px 12px", borderRadius: 100,
-            letterSpacing: 0.5, fontFamily: "'Poppins', sans-serif",
-            boxShadow: `0 4px 12px ${T.green}50`,
-          }}>
-            {product.tag}
-          </div>
-        )}
-
-        <div style={{
-          position: "absolute", top: 14, right: 14,
-          display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end"
-        }}>
-          <div style={{
-            background: isLowStock ? "rgba(239,68,68,0.92)" : "rgba(255,255,255,0.92)",
-            color: isLowStock ? "white" : T.green,
-            fontSize: 10, fontWeight: 800, padding: "5px 11px", borderRadius: 100,
-            backdropFilter: "blur(6px)",
-            border: isLowStock ? "none" : `1px solid ${T.green}40`,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          }}>
-            {isLowStock ? `Only ${product.stock} left` : "In Stock"}
-          </div>
-          {(product.isRentable || true) && (
-            <div style={{
-              background: `linear-gradient(135deg, ${T.amber}, ${T.amber}dd)`,
-              color: "white", fontSize: 10, fontWeight: 800, padding: "5px 11px", borderRadius: 100,
-              boxShadow: "0 2px 8px rgba(245,158,11,0.3)",
-            }}>
-              Rent Available
-            </div>
+        
+        {/* Top Badges */}
+        <div style={{ position: "absolute", top: 16, left: 16, display: "flex", flexWrap: "wrap", gap: 8, zIndex: 2 }}>
+          {isLowStock && (
+            <div className="glass-effect" style={{ 
+              color: T.red, fontSize: 10, fontWeight: 800, padding: "5px 12px", borderRadius: 100,
+              border: `1px solid ${T.red}20`, textTransform: "uppercase", letterSpacing: "0.05em"
+            }}>Low Stock</div>
+          )}
+          {product.tag && (
+            <div style={{ 
+              background: T.navy, color: "white", fontSize: 10, fontWeight: 700, padding: "5px 12px", 
+              borderRadius: 100, textTransform: "uppercase", letterSpacing: "0.05em"
+            }}>{product.tag}</div>
           )}
         </div>
 
-        {/* Wishlist heart */}
+        {/* Wishlist Button */}
         <button
           onClick={(e) => { e.stopPropagation(); setWishlisted(w => !w); }}
+          className="glass-effect"
           style={{
-            position: "absolute", bottom: 14, right: 14,
-            width: 34, height: 34, borderRadius: "50%",
-            background: "rgba(255,255,255,0.92)", border: "none", cursor: "pointer",
+            position: "absolute", top: 16, right: 16,
+            width: 40, height: 40, borderRadius: "50%",
+            border: "none", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            backdropFilter: "blur(6px)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             opacity: hovered || wishlisted ? 1 : 0,
-            transition: "opacity 0.2s, transform 0.2s",
-            transform: wishlisted ? "scale(1.15)" : "scale(1)",
+            transition: "all 0.3s ease",
+            transform: hovered || wishlisted ? "scale(1)" : "scale(0.8)",
+            zIndex: 2
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24"
-            fill={wishlisted ? "#ef4444" : "none"}
-            stroke={wishlisted ? "#ef4444" : T.muted}
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
+          <Ic name="Star" size={18} color={wishlisted ? T.amber : T.navyMid} />
         </button>
+
+        {/* Price Glass Tag */}
+        <div className="glass-effect" style={{ 
+          position: "absolute", bottom: 16, left: 16, padding: "8px 16px", borderRadius: 14,
+          boxShadow: T.shadowSubtle, border: "1px solid rgba(255,255,255,0.4)"
+        }}>
+           <span style={{ fontSize: 18, fontWeight: 800, color: T.navy, fontFamily: "'Poppins', sans-serif" }}>
+             {formatPrice(product.price)}
+           </span>
+        </div>
       </div>
 
-      {/* ── Content area ── */}
-      <div style={{ padding: "18px 20px 20px", flex: 1, display: "flex", flexDirection: "column" }}>
-
-        {/* Category + material */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 6, marginBottom: 8,
-        }}>
-          <span style={{
-            fontSize: 10, color: T.muted, fontWeight: 700,
-            textTransform: "uppercase", letterSpacing: 1.2,
-          }}>{product.category}</span>
-          <span style={{ width: 3, height: 3, borderRadius: "50%", background: T.borderMid, flexShrink: 0 }} />
-          <span style={{
-            fontSize: 10, color: T.muted, fontWeight: 600,
-            textTransform: "uppercase", letterSpacing: 0.8,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }}>{product.material}</span>
+      {/* Content Area */}
+      <div style={{ padding: "24px", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+             <span style={{ fontSize: 11, color: T.green, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+               {product.category}
+             </span>
+             <Stars rating={product.rating} />
+          </div>
+          <h3 style={{ 
+            fontSize: 18, fontWeight: 700, color: T.navy, lineHeight: 1.3,
+            margin: 0, fontFamily: "'Poppins', sans-serif" 
+          }}>{product.name}</h3>
         </div>
 
-        {/* Product name */}
-        <h3
-          onClick={() => onView(product)}
-          style={{
-            fontSize: 15, fontWeight: 700, color: T.navy,
-            lineHeight: 1.38, fontFamily: "'Poppins', sans-serif",
-            cursor: "pointer", marginBottom: 7,
-            transition: "color 0.2s",
-          }}
-          onMouseOver={e => e.currentTarget.style.color = T.green}
-          onMouseOut={e => e.currentTarget.style.color = T.navy}
-        >
-          {product.name}
-        </h3>
+        <p style={{ 
+          fontSize: 13, color: T.slate, lineHeight: 1.6, margin: 0,
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" 
+        }}>{product.desc}</p>
 
-        {/* Description */}
-        <p style={{
-          fontSize: 12.5, color: T.muted, lineHeight: 1.65,
-          marginBottom: 12, flex: 1,
-          display: "-webkit-box", WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical", overflow: "hidden",
-        }}>
-          {product.desc}
-        </p>
-
-        {/* Stars */}
-        <div style={{ marginBottom: 14 }}>
-          <Stars rating={product.rating} count={product.reviews} />
-        </div>
-
-        {/* Eco score + Price row */}
-        <div style={{
-          display: "flex", alignItems: "center",
-          justifyContent: "space-between",
-          background: accent,
-          borderRadius: 12, padding: "10px 14px",
-          marginBottom: 14,
-          border: `1px solid ${T.green}18`,
+        {/* Eco Metrics Row */}
+        <div style={{ 
+          display: "flex", alignItems: "center", gap: 16, marginTop: "auto",
+          padding: "12px 16px", background: T.greenLight, borderRadius: 16,
+          border: `1px solid ${T.green}10`
         }}>
           <EcoScore score={product.ecoScore} />
-          <div>
-            <div style={{ fontSize: 19, fontWeight: 800, color: T.green, fontFamily: "'Poppins', sans-serif", lineHeight: 1 }}>
-              {formatPrice(product.price)}
-            </div>
-            {(product.isRentable || true) && (
-              <div style={{ fontSize: 11, color: T.amber, fontWeight: 700, textAlign: "right", marginTop: 2 }}>
-                or {formatPrice(product.rentPricePerMonth || Math.floor(product.price * 0.1))}/mo
-              </div>
-            )}
-            {!product.isRentable && <div style={{ fontSize: 10, color: T.muted, textAlign: "right", marginTop: 2 }}>incl. taxes</div>}
+          <div style={{ height: 24, width: 1, background: `${T.green}20` }} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: T.muted, textTransform: "uppercase" }}>Material</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: T.navyMid }}>{product.material}</span>
           </div>
         </div>
 
-        {/* CTA buttons */}
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            onClick={() => onView(product)}
-            style={{
-              flex: 1, padding: "9px 0",
-              background: "transparent",
-              border: `1.5px solid ${T.borderMid}`,
-              borderRadius: 11, fontSize: 12, fontWeight: 700,
-              color: T.navyMid, cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              transition: "all 0.2s",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = T.green; e.currentTarget.style.color = T.green; }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = T.borderMid; e.currentTarget.style.color = T.navyMid; }}
-          >
-            <Ic name="Eye" size={13} />
-          </button>
-
-          <button
-            onClick={handleAdd}
-            style={{
-              flex: 2, padding: "9px 0",
-              background: added
-                ? T.greenLight
-                : `linear-gradient(135deg, ${T.green} 0%, ${T.greenDark} 100%)`,
-              border: added ? `1.5px solid ${T.green}60` : "none",
-              borderRadius: 11, fontSize: 13, fontWeight: 800,
-              color: added ? T.green : "white",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              transition: "all 0.25s ease",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              boxShadow: added ? "none" : `0 4px 16px ${T.green}40`,
-              transform: added ? "scale(0.98)" : "scale(1)",
-            }}
-            onMouseOver={e => { if (!added) { e.currentTarget.style.boxShadow = `0 6px 20px ${T.green}55`; e.currentTarget.style.transform = "scale(1.02)"; } }}
-            onMouseOut={e => { if (!added) { e.currentTarget.style.boxShadow = `0 4px 16px ${T.green}40`; e.currentTarget.style.transform = "scale(1)"; } }}
-          >
-            <Ic name={added ? "Check" : "Cart"} size={14} />
-            {added ? "Added!" : "Add to Cart"}
-          </button>
-
+        {/* Action Buttons Row */}
+        <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+           <button 
+             onClick={() => onView(product)}
+             style={{ 
+               flex: 1, height: 48, borderRadius: 14, border: `1.5px solid ${T.borderMid}`,
+               background: "transparent", color: T.navyMid, fontSize: 14, fontWeight: 600,
+               cursor: "pointer", transition: "all 0.2s ease" 
+             }}
+             onMouseOver={e => { e.currentTarget.style.borderColor = T.navy; e.currentTarget.style.background = T.navy; e.currentTarget.style.color = "white"; }}
+             onMouseOut={e => { e.currentTarget.style.borderColor = T.borderMid; e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.navyMid; }}
+           >View Details</button>
+           
+           <button 
+             onClick={handleAdd}
+             style={{ 
+               flex: 2, height: 48, borderRadius: 14, border: "none",
+               background: added ? T.greenLight : `linear-gradient(135deg, ${T.green} 0%, ${T.greenDark} 100%)`,
+               color: added ? T.green : "white", fontSize: 14, fontWeight: 700,
+               cursor: "pointer", transition: "all 0.3s ease",
+               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+               boxShadow: added ? "none" : `0 8px 24px ${T.green}30`
+             }}
+             onMouseOver={e => { if(!added) e.currentTarget.style.transform = "scale(1.02)"; }}
+             onMouseOut={e => { if(!added) e.currentTarget.style.transform = "scale(1)"; }}
+           >
+             <Ic name={added ? "Check" : "Cart"} size={18} />
+             {added ? "Added!" : "Add to Cart"}
+           </button>
         </div>
       </div>
     </div>
@@ -2962,6 +2930,110 @@ function AdminReviewsPage() {
   );
 }
 
+function AdminSecurityPage() {
+  const [logs, setLogs] = useState([]);
+  const [stats, setStats] = useState({ totalLogs: 0, loginCount: 0, criticalActions: 0 });
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    try {
+      const [logsRes, statsRes] = await Promise.all([
+        API.get('/security/logs'),
+        API.get('/security/stats')
+      ]);
+      setLogs(logsRes.data || []);
+      setStats(statsRes.data || {});
+    } catch (err) {
+      console.error("SOC Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 30000); // 30s auto-refresh
+    return () => clearInterval(interval);
+  }, []);
+
+  const getActionStyle = (action) => {
+    const critical = ['ROLE_CHANGE', 'USER_DELETE', 'ADMIN_ACTION'];
+    const success = ['LOGIN', 'REGISTER'];
+    if (critical.includes(action)) return { color: T.red, bg: T.redLight };
+    if (success.includes(action)) return { color: T.green, bg: T.greenLight };
+    return { color: T.blue, bg: T.blueLight };
+  };
+
+  return (
+    <div style={{ maxWidth: 1300, margin: "0 auto", padding: "48px 40px" }}>
+      <header style={{ marginBottom: 40, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: T.navy, fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}>Security SOC Dashboard</h2>
+          <p style={{ color: T.muted, fontSize: 15, marginTop: 4 }}>Real-time Audit Log & Forensic Activity Monitor</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+           <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
+           <span style={{ fontSize: 13, fontWeight: 700, color: T.navyMid, textTransform: "uppercase", letterSpacing: "0.1em" }}>System Secure</span>
+        </div>
+      </header>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 40 }}>
+         <Card style={{ padding: 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Total Events Logged</div>
+            <div style={{ fontSize: 32, fontWeight: 800, color: T.navy }}>{stats.totalLogs}</div>
+         </Card>
+         <Card style={{ padding: 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Logins (24h)</div>
+            <div style={{ fontSize: 32, fontWeight: 800, color: T.green }}>{stats.loginCount}</div>
+         </Card>
+         <Card style={{ padding: 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Critical Exceptions</div>
+            <div style={{ fontSize: 32, fontWeight: 800, color: T.red }}>{stats.criticalActions}</div>
+         </Card>
+      </div>
+
+      <Card hover={false} style={{ overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+           <thead>
+             <tr style={{ background: T.bg }}>
+               {["Timestamp", "Action", "Actor (User/Guest)", "IP Address", "Device Metadata"].map(h => (
+                 <th key={h} style={{ padding: "16px 24px", textAlign: "left", fontSize: 11, fontWeight: 700, color: T.muted, textTransform: "uppercase" }}>{h}</th>
+               ))}
+             </tr>
+           </thead>
+           <tbody>
+             {logs.map((log, i) => {
+               const style = getActionStyle(log.action);
+               return (
+                 <tr key={log._id || i} style={{ borderTop: `1px solid ${T.border}`, transition: "background 0.2s" }} className="log-row">
+                    <td style={{ padding: "16px 24px", fontSize: 13, color: T.navyMid, fontFamily: "monospace" }}>
+                      {new Date(log.timestamp).toLocaleString()}
+                    </td>
+                    <td style={{ padding: "16px 24px" }}>
+                       <span style={{ 
+                         background: style.bg, color: style.color, 
+                         padding: "4px 10px", borderRadius: 8, fontSize: 11, fontWeight: 800 
+                       }}>{log.action}</span>
+                    </td>
+                    <td style={{ padding: "16px 24px", fontSize: 14, fontWeight: 600, color: T.navy }}>
+                      {log.userId === 'GUEST' ? 'System Guest' : log.userId?.slice(-8)}
+                    </td>
+                    <td style={{ padding: "16px 24px", fontSize: 13, color: T.muted }}>
+                      {log.ip || '0.0.0.0'}
+                    </td>
+                    <td style={{ padding: "16px 24px", fontSize: 12, color: T.muted, maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {log.userAgent}
+                    </td>
+                 </tr>
+               );
+             })}
+           </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
+
 function ReviewSection({ product, user, notify }) {
   const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(5);
@@ -3288,7 +3360,7 @@ function AppInner() {
   }, [notify]);
 
   const noNavPages = ["login", "register"];
-  const noFooterPages = ["login", "register", "vendor-home", "vendor-products", "vendor-add", "admin-home", "admin-users", "admin-orders", "admin-vendors"];
+  const noFooterPages = ["login", "register", "vendor-home", "vendor-products", "vendor-add", "admin-home", "admin-users", "admin-orders", "admin-vendors", "admin-security", "admin-reviews", "admin-crm"];
 
   return (
     <div style={{ minHeight: "100vh", background: T.white, overflowX: "hidden" }}>
@@ -3395,6 +3467,11 @@ function AppInner() {
         {page === "admin-reviews" && (
           <ProtectedPage allowedRole="admin" setPage={setPage}>
             <AdminReviewsPage />
+          </ProtectedPage>
+        )}
+        {page === "admin-security" && (
+          <ProtectedPage allowedRole="admin" setPage={setPage}>
+            <AdminSecurityPage />
           </ProtectedPage>
         )}
         {page === "admin-crm" && (

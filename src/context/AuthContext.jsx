@@ -108,11 +108,22 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Login with email and password
   const login = async (email, password) => {
     setError(null);
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      let result;
+      try {
+        result = await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        const demoEmails = ['user@econest.com', 'vendor@econest.com', 'admin@econest.com'];
+        if (demoEmails.includes(email.toLowerCase()) && (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials')) {
+           // Auto-register demo account if missing in Firebase
+           const role = email.includes('admin') ? 'admin' : email.includes('vendor') ? 'supplier' : 'customer';
+           const name = email.includes('admin') ? 'Admin EcoNest' : email.includes('vendor') ? 'GreenWood Eco' : 'Eco User';
+           return await register(email, password, name, role);
+        }
+        throw err;
+      }
       
       // Fetch backend profile immediately to return it
       const token = await result.user.getIdToken();
@@ -128,10 +139,13 @@ export function AuthProvider({ children }) {
       };
 
       setUser(fullUser);
-      return fullUser;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      let msg = err.message;
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-login-credentials') {
+        msg = "Invalid credentials. If you signed up with Google, please use 'Sign in with Google'. Otherwise, click 'Register here' to create an account.";
+      }
+      setError(msg);
+      throw new Error(msg);
     }
   };
 

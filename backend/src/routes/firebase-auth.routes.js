@@ -1,24 +1,12 @@
 import express from 'express';
 import admin from 'firebase-admin';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-// Middleware to verify Firebase token
-export const verifyFirebaseToken = async (req, res, next) => {
-  const token = req.headers.authorization?.split('Bearer ')[1];
-
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    req.user = decodedToken;
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
-};
+// The original verifyFirebaseToken is now replaced by verifyToken from middleware
+// We keep the export if other files still import it, but redirect it to verifyToken
+export const verifyFirebaseToken = verifyToken;
 
 // Verify Firebase token endpoint
 router.post('/verify', verifyFirebaseToken, (req, res) => {

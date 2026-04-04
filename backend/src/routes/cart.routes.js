@@ -1,10 +1,10 @@
 import express from 'express';
 import { getCart, updateCart } from '../controllers/cart.controller.js';
-import { verifyFirebaseToken } from './firebase-auth.routes.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-router.use(verifyFirebaseToken);
+router.use(verifyToken);
 
 router.get('/', getCart);
 router.post('/', updateCart);

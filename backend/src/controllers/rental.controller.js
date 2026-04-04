@@ -23,6 +23,11 @@ export const renewRental = async (req, res) => {
     const rental = await RentalHistory.findById(id);
     if (!rental) return res.status(404).json({ error: 'Rental not found' });
 
+    // Ownership check
+    if (rental.userId.toString() !== req.mongoUser._id.toString()) {
+        return res.status(403).json({ error: 'Access denied: You do not own this rental' });
+    }
+
     rental.durationMonths += additionalMonths;
     const newEndDate = new Date(rental.endDate);
     newEndDate.setMonth(newEndDate.getMonth() + additionalMonths);
@@ -46,6 +51,11 @@ export const endRental = async (req, res) => {
     const rental = await RentalHistory.findById(id);
     
     if (!rental) return res.status(404).json({ error: 'Rental not found' });
+
+    // Ownership check
+    if (rental.userId.toString() !== req.mongoUser._id.toString()) {
+        return res.status(403).json({ error: 'Access denied: You do not own this rental' });
+    }
 
     rental.status = 'completed';
     await rental.save();

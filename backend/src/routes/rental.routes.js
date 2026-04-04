@@ -1,11 +1,13 @@
 import express from 'express';
 import { getUserRentals, renewRental, endRental, createRental } from '../controllers/rental.controller.js';
-import { verifyFirebaseToken } from './firebase-auth.routes.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-router.get('/', verifyFirebaseToken, getUserRentals);
-router.post('/', verifyFirebaseToken, createRental);
+router.use(verifyToken);
+
+router.get('/', getUserRentals);
+router.post('/', createRental);
 router.post('/:id/renew', renewRental);
 router.post('/:id/end', endRental);
 
