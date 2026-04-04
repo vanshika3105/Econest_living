@@ -125,6 +125,7 @@ const Icon = {
   Lock: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
   RefreshCw: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>,
   Zap: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>,
+  Upload: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>,
 };
 
 // helper: icon with fixed size
@@ -700,6 +701,296 @@ function SustainabilitySection() {
         </div>
       </div>
     </section>
+  );
+}
+
+// ─── AI CUSTOMIZATION LANDING PAGE (Creative Campaign View) ──────────────────
+
+function AICustomizationLandingPage({ onExplore }) {
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const handleSimulate = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setStep(2);
+    }, 2800);
+  };
+
+  return (
+    <div style={{ background: "#0f172a", color: "white", minHeight: "100vh" }}>
+      {/* Immersive Hero */}
+      <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center" }}>
+        <img 
+          src="/ai_furniture_customization_hero_1775307924686.png" 
+          alt="AI Studio" 
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }} 
+        />
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 40% 50%, transparent 20%, #0f172a 100%)" }} />
+        
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 60px", position: "relative", zIndex: 1, width: "100%" }}>
+          <div style={{ maxWidth: 700 }}>
+             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                <div style={{ background: T.green, color: "white", padding: "6px 14px", borderRadius: 100, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.15em" }}>AI Laboratory</div>
+                <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 700 }}>v4.2.1 Stable</span>
+             </div>
+             <h1 style={{ fontSize: "5rem", fontWeight: 900, lineHeight: 1.05, marginBottom: 20, fontFamily: "'Poppins', sans-serif", color: "white" }}>
+               Design Your <span style={{ color: T.green }}>Future Home.</span><br />Powered by <span style={{ color: T.blue }}>Eco-AI.</span>
+             </h1>
+             <p style={{ fontSize: 22, color: "rgba(255,255,255,0.75)", lineHeight: 1.6, marginBottom: 44 }}>
+               Upload a photo of your empty space. Our AI analyzes lighting, dimensions, 
+               and acoustics to recommend the perfect sustainable furniture layout.
+             </p>
+             
+             {step === 1 ? (
+                <div style={{ display: "flex", gap: 20 }}>
+                   <div style={{ 
+                     background: "rgba(255,255,255,0.05)", border: `2px dashed ${T.borderMid}`,
+                     padding: "24px 32px", borderRadius: 24, flex: 1, cursor: "pointer",
+                     display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+                     transition: "transform 0.2s"
+                   }} onMouseOver={e => e.currentTarget.style.transform = "scale(1.02)"}
+                      onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}
+                      onClick={handleSimulate}>
+                      <Ic name="Upload" size={32} color={T.blue} />
+                      <span style={{ fontSize: 15, fontWeight: 800 }}>{loading ? "Neural Analysis..." : "Drag Room Photo"}</span>
+                   </div>
+                   <Btn size="xl" onClick={onExplore} variant="outline" style={{ border: "2px solid rgba(255,255,255,0.3)", color: "white", borderRadius: 24 }}>Explore Template Rooms</Btn>
+                </div>
+             ) : (
+                <div style={{ background: "rgba(34,197,94,0.15)", border: `2px solid ${T.green}40`, padding: 32, borderRadius: 24, animation: "fadeIn 0.5s" }}>
+                   <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 20 }}>
+                      <div style={{ width: 44, height: 44, background: T.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Ic name="Check" size={24} color="white" />
+                      </div>
+                      <h4 style={{ fontSize: 18, fontWeight: 800 }}>Optimal Layout Calculated</h4>
+                   </div>
+                   <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 15, marginBottom: 24 }}>AI suggests: 1 Nordland Reclaimed Bed (Queen) + 2 Eco-Bamboo Nightstands. Fits perfectly with 14% energy optimization.</p>
+                   <Btn size="lg" onClick={onExplore} style={{ borderRadius: 14 }}>Add AI Picks to Cart</Btn>
+                </div>
+             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Proof of Technology */}
+      <section style={{ padding: "100px 60px", maxWidth: 1280, margin: "0 auto" }}>
+         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 40 }}>
+            <Card style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", padding: 40, color: "white" }}>
+               <div style={{ fontSize: 36, fontWeight: 900, color: T.green, marginBottom: 12 }}>99.4%</div>
+               <h5 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Dimension Accuracy</h5>
+               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Laser-precision spatial analysis from standard mobile photos.</p>
+            </Card>
+            <Card style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", padding: 40, color: "white" }}>
+               <div style={{ fontSize: 36, fontWeight: 900, color: T.blue, marginBottom: 12 }}>{` < 2s`}</div>
+               <h5 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Render Generation</h5>
+               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Edge-computing powered real-time visualization of eco-interiors.</p>
+            </Card>
+            <Card style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", padding: 40, color: "white" }}>
+               <div style={{ fontSize: 36, fontWeight: 900, color: T.amber, marginBottom: 12 }}>30%</div>
+               <h5 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Space Efficiency</h5>
+               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Optimize your urban living area with smart modular recommendations.</p>
+            </Card>
+         </div>
+      </section>
+    </div>
+  );
+}
+
+// ─── MARKETING LANDING PAGE — Eco-Luxury Campaign ────────────────────────────
+
+function MarketingLandingPage({ onExplore }) {
+  const [email, setEmail] = useState("");
+  
+  return (
+    <div style={{ background: T.white }}>
+      {/* Sticky Promo Bar */}
+      <div style={{ 
+        background: `linear-gradient(90deg, ${T.greenDark}, ${T.green})`, 
+        color: "white", textAlign: "center", padding: "10px", 
+        fontSize: 12, fontWeight: 800, letterSpacing: "0.1em",
+        textTransform: "uppercase", position: "sticky", top: 0, zIndex: 1000 
+      }}>
+        🎉 Earth Day Special: Get 15% Off Your First Eco-Friendly Piece • Code: ECO15
+      </div>
+
+      {/* Campaign Hero */}
+      <section style={{ 
+        position: "relative", minHeight: "85vh", display: "flex", 
+        alignItems: "center", overflow: "hidden" 
+      }}>
+        <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+          <img 
+            src="/econest_marketing_hero_1775307617218.png" 
+            alt="Eco-Luxury Living" 
+            style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.85)" }} 
+          />
+          <div style={{ 
+            position: "absolute", inset: 0, 
+            background: "linear-gradient(to right, rgba(15,23,42,0.8) 0%, transparent 70%)" 
+          }} />
+        </div>
+
+        <div style={{ 
+          maxWidth: 1280, margin: "0 auto", padding: "0 60px", 
+          position: "relative", zIndex: 1, width: "100%" 
+        }}>
+          <div style={{ maxWidth: 650 }}>
+            <Badge color={T.green}>Summer 2024 Collection</Badge>
+            <h1 style={{ 
+              fontSize: "clamp(3rem, 6vw, 4.5rem)", fontWeight: 900, 
+              color: "white", lineHeight: 1.1, margin: "20px 0",
+              fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.04em"
+            }}>
+              Luxury That <span style={{ color: T.green }}>Doesn't Cost</span> The Earth.
+            </h1>
+            <p style={{ 
+              fontSize: 20, color: "rgba(255,255,255,0.85)", 
+              lineHeight: 1.6, marginBottom: 40, fontWeight: 500 
+            }}>
+              Discover furniture crafted from 100% reclaimed materials. 
+              Carbon-neutral delivery. Lifetime durability guarantee.
+            </p>
+            <div style={{ display: "flex", gap: 16 }}>
+              <Btn size="xl" onClick={onExplore} style={{ borderRadius: 14 }}>Shop Catalog</Btn>
+              <Btn variant="outline" size="xl" style={{ border: "2.5px solid white", color: "white", borderRadius: 14 }}>Our Story</Btn>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Ticker */}
+      <div style={{ 
+        background: T.bg, padding: "24px 0", borderBottom: `1px solid ${T.border}`,
+        overflow: "hidden", display: "flex", whiteSpace: "nowrap"
+      }}>
+        {[1,2,3].map(i => (
+          <div key={i} style={{ display: "flex", gap: 60, padding: "0 30px", animation: "ticker 30s linear infinite" }}>
+            {["FSC CERTIFIED", "ZERO-PLASTIC", "15,000+ HOMES", "CARBON NEUTRAL", "MADE IN INDIA"].map(t => (
+              <span key={t} style={{ fontSize: 13, fontWeight: 800, color: T.muted }}>• {t}</span>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Security & Reliability Showroom (New Section) */}
+      <section style={{ padding: "100px 32px", background: "#f8fafc" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 60 }}>
+            <Badge color={T.blue}>Infrastructure</Badge>
+            <h2 style={{ fontSize: 36, fontWeight: 900, color: T.navy, marginTop: 16, fontFamily: "'Poppins', sans-serif" }}>Built with Military-Grade Security.</h2>
+            <p style={{ color: T.muted, fontSize: 16, marginTop: 10 }}>Your data and transactions are protected by industry-leading protocols.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 32 }}>
+            {[
+              { icon: "Shield", title: "AES-256 Encryption", desc: "All user data and communications are encrypted using state-of-the-art standards.", color: T.green },
+              { icon: "Lock", title: "Biometric Auth", desc: "Firebase-backed authentication with Google One-Tap and MFA support.", color: T.blue },
+              { icon: "RefreshCw", title: "Real-time SOC", desc: "Active monitoring with our Security Operations Center (SOC) dashboard.", color: T.amber },
+              { icon: "Smartphone", title: "Safe Payments", desc: "Integrated with Razorpay/Stripe for PCI-DSS compliant transactions.", color: T.green }
+            ].map((feature, i) => (
+              <Card key={i} style={{ padding: 32, border: `1px solid ${T.borderMid}` }}>
+                <div style={{ width: 56, height: 56, background: feature.color + "15", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
+                  <Ic name={feature.icon} size={28} color={feature.color} />
+                </div>
+                <h4 style={{ fontSize: 18, fontWeight: 800, marginBottom: 12 }}>{feature.title}</h4>
+                <p style={{ fontSize: 14, color: T.slate, lineHeight: 1.6 }}>{feature.desc}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* The Movement Section */}
+      <section style={{ padding: "120px 60px", maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontSize: 36, fontWeight: 900, color: T.navy, marginBottom: 20, fontFamily: "'Poppins', sans-serif" }}>Join the Conscious Movement.</h2>
+          <p style={{ fontSize: 18, color: T.slate, lineHeight: 1.8, marginBottom: 60 }}>
+            EcoNest isn't just furniture. It's a commitment to the planet. We've diverted 400 tons of 
+            wood waste from landfills this year alone. Your purchase helps us plant 10 trees in 
+            the Western Ghats.
+          </p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 32 }}>
+             <Card style={{ padding: 40 }}>
+                <Ic name="Leaf" size={40} color={T.green} style={{ marginBottom: 20 }} />
+                <h4 style={{ fontSize: 18, fontWeight: 800 }}>Recovered Materials</h4>
+                <p style={{ fontSize: 14, color: T.muted, marginTop: 10 }}>100% of our wood is sourced from old ships and buildings.</p>
+             </Card>
+             <Card style={{ padding: 40 }}>
+                <Ic name="Truck" size={40} color={T.blue} style={{ marginBottom: 20 }} />
+                <h4 style={{ fontSize: 18, fontWeight: 800 }}>EV Delivery Only</h4>
+                <p style={{ fontSize: 14, color: T.muted, marginTop: 10 }}>Our last-mile logistics are performed by electric vehicle fleets.</p>
+             </Card>
+             <Card style={{ padding: 40 }}>
+                <Ic name="Shield" size={40} color={T.amber} style={{ marginBottom: 20 }} />
+                <h4 style={{ fontSize: 18, fontWeight: 800 }}>Legacy Built</h4>
+                <p style={{ fontSize: 14, color: T.muted, marginTop: 10 }}>We offer a 10-year repair-or-replace guarantee for all pieces.</p>
+             </Card>
+          </div>
+      </section>
+
+      {/* Social Proof (New Section) */}
+      <section style={{ padding: "80px 32px", background: T.white }}>
+         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+            <div style={{ display: "flex", gap: 24, overflowX: "auto", paddingBottom: 20 }}>
+               {[
+                 { name: "Anish K.", stars: 5, text: "The quality of the reclaimed teak desk is unbelievable. You can feel the history in the wood." },
+                 { name: "Priya M.", stars: 5, text: "Love the rental option! Perfect for my temporary stay in Bangalore. Zero waste, zero hassle." },
+                 { name: "Rahul S.", stars: 5, text: "Fast shipping and sustainable packaging. Not a single piece of plastic in the box!" }
+               ].map((t, i) => (
+                 <Card key={i} style={{ minWidth: 320, padding: 32, flexShrink: 0 }}>
+                    <div style={{ display: "flex", gap: 2, marginBottom: 12 }}>
+                      {[1,2,3,4,5].map(s => <Ic key={s} name="Star" size={14} color={T.amber} />)}
+                    </div>
+                    <p style={{ fontSize: 15, fontStyle: "italic", color: T.navyMid, marginBottom: 16 }}>"{t.text}"</p>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: T.green }}>{t.name}</p>
+                 </Card>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      {/* Marketing Conversion */}
+      <section style={{ 
+        padding: "100px 60px", background: T.navy, borderRadius: 40, 
+        margin: "0 40px 100px", color: "white", textAlign: "center",
+        position: "relative", overflow: "hidden"
+      }}>
+         <div style={{ position: "absolute", top: -50, right: -50, width: 300, height: 300, background: T.green, borderRadius: "50%", filter: "blur(80px)", opacity: 0.2 }} />
+         
+         <div style={{ maxWidth: 600, margin: "0 auto", position: "relative", zIndex: 1 }}>
+            {!email.includes("sent") ? (
+              <>
+                <h3 style={{ fontSize: 32, fontWeight: 900, marginBottom: 16, fontFamily: "'Poppins', sans-serif" }}>Get Early Access</h3>
+                <p style={{ fontSize: 16, opacity: 0.8, marginBottom: 32 }}>Join our newsletter and receive exclusive drops and earth-friendly tips. Plus, 15% off your next order.</p>
+                <div style={{ display: "flex", gap: 10 }}>
+                   <input 
+                     type="email" 
+                     placeholder="your@email.com" 
+                     value={email}
+                     onChange={e => setEmail(e.target.value)}
+                     style={{ 
+                       flex: 1, padding: "18px 24px", borderRadius: 14,
+                       background: "rgba(255,255,255,0.1)", color: "white", fontSize: 15,
+                       outline: "none", border: "1px solid rgba(255,255,255,0.2)"
+                     }} 
+                   />
+                   <Btn size="xl" style={{ borderRadius: 14, minWidth: 160 }} onClick={() => setEmail("sent")}>Sign Up</Btn>
+                </div>
+              </>
+            ) : (
+              <div style={{ animation: "fadeIn 0.5s" }}>
+                <div style={{ width: 64, height: 64, background: T.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+                  <Ic name="Check" size={32} color="white" />
+                </div>
+                <h3 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12, fontFamily: "'Poppins', sans-serif" }}>You're on the list!</h3>
+                <p style={{ fontSize: 16, opacity: 0.8 }}>Check your inbox for your 15% discount code. Welcome to the movement.</p>
+              </div>
+            )}
+         </div>
+      </section>
+    </div>
   );
 }
 
@@ -2977,19 +3268,39 @@ function AdminSecurityPage() {
         </div>
       </header>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 40 }}>
-         <Card style={{ padding: 24 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Total Events Logged</div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: T.navy }}>{stats.totalLogs}</div>
-         </Card>
-         <Card style={{ padding: 24 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Logins (24h)</div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: T.green }}>{stats.loginCount}</div>
-         </Card>
-         <Card style={{ padding: 24 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Critical Exceptions</div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: T.red }}>{stats.criticalActions}</div>
-         </Card>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 40 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+           <Card style={{ padding: 24 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Total Events Logged</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: T.navy }}>{stats.totalLogs}</div>
+           </Card>
+           <Card style={{ padding: 24 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Logins (24h)</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: T.green }}>{stats.loginCount}</div>
+           </Card>
+           <Card style={{ padding: 24 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", marginBottom: 8 }}>Critical Exceptions</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: T.red }}>{stats.criticalActions}</div>
+           </Card>
+        </div>
+
+        <Card style={{ background: T.red + "08", border: `2px solid ${T.red}20`, padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+           <div>
+              <p style={{ fontSize: 13, fontWeight: 800, color: T.red, textTransform: "uppercase", marginBottom: 4 }}>Live Demo Hub</p>
+              <h4 style={{ fontSize: 15, fontWeight: 800, color: T.navy }}>Simulate Infrastructure Attack</h4>
+              <p style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>Verify the IDS response and audit logging speed.</p>
+           </div>
+           <Btn size="sm" variant="outline" color={T.red} onClick={async () => {
+              try {
+                await API.post('/security/simulate-threat');
+                fetchData();
+              } catch (e) {
+                console.error("Simulation failed:", e);
+              }
+           }}>
+              <Ic name="Zap" size={14} /> Trigger Test Threat
+           </Btn>
+        </Card>
       </div>
 
       <Card hover={false} style={{ overflow: "hidden" }}>
@@ -3159,7 +3470,12 @@ function Footer({ setPage }) {
           {[
             {
               title: "Platform",
-              links: [["Shop Collection", () => setPage("shop")], ["Sustainability Guide", null], ["Supplier Program", null], ["Eco-Impact Reports", null]]
+              links: [
+                ["Shop Collection", () => setPage("shop")], 
+                ["Campaign: Eco-Luxury", () => setPage("marketing")],
+                ["AI Design Studio", () => setPage("ai-customization")],
+                ["Sustainability Guide", null]
+              ]
             },
             {
               title: "Customer Care",
@@ -3391,6 +3707,8 @@ function AppInner() {
         {page === "register" && <RegisterPage setPage={setPage} />}
 
         {/* ── CUSTOMER PAGES ───────────────────────────────────────── */}
+        {page === "marketing" && <MarketingLandingPage onExplore={() => setPage("shop")} />}
+        {page === "ai-customization" && <AICustomizationLandingPage onExplore={() => setPage("shop")} />}
         {page === "shop" && (
           <ProtectedPage allowedRole="customer" setPage={setPage}>
             <div>

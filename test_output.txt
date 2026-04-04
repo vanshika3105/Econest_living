@@ -1,0 +1,12 @@
+﻿[DEBUG] [vite] connecting...
+[DEBUG] [vite] connected.
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o
+BODY HTML LENGTH: 16720
+Has Admin content? true
+BODY HTML PREVIEW: 
+    <div id="root"><div style="min-height: 100vh; background: rgb(255, 255, 255); overflow-x: hidden;"><style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: #0f172a; background: #fff; -webkit-font-smoothing: antialiased; }
+        ::placeholder { color: #94a3b8; }
