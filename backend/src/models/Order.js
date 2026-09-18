@@ -10,6 +10,14 @@ const orderItemSchema = new mongoose.Schema({
   rentalDuration: { type: Number, default: 0 } // in months
 });
 
+const trackingEventSchema = new mongoose.Schema({
+  status: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+  note: { type: String, default: '' },
+  updatedBy: { type: String, default: 'system' }, // admin userId or 'system'
+  location: { type: String, default: '' }
+});
+
 const orderSchema = new mongoose.Schema({
   orderId: { type: String, required: true, unique: true },
   userId: { type: String, required: true }, // Firebase UID
@@ -20,7 +28,32 @@ const orderSchema = new mongoose.Schema({
     address: String, city: String, state: String, pincode: String
   },
   paymentMethod: { type: String, required: true },
-  status: { type: String, enum: ['Ordered', 'Packed', 'Shipped', 'Delivered'], default: 'Ordered' }
+  status: { 
+    type: String, 
+    enum: ['Ordered', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'], 
+    default: 'Ordered' 
+  },
+  // Live Tracking fields
+  trackingHistory: [trackingEventSchema],
+  carrier: { type: String, default: '' },
+  trackingNumber: { type: String, default: '' },
+  estimatedDelivery: { type: Date },
+  adminNotes: { type: String, default: '' },
+  cancelledAt: { type: Date },
+  cancelReason: { type: String, default: '' },
 }, { timestamps: true });
+
+// Auto-add initial tracking event on creation
+orderSchema.pre('save', function(next) {
+  if (this.isNew && this.trackingHistory.length === 0) {
+    this.trackingHistory.push({
+      status: 'Ordered',
+      timestamp: new Date(),
+      note: 'Order placed successfully',
+      updatedBy: 'system'
+    });
+  }
+  next();
+});
 
 export default mongoose.model('Order', orderSchema);

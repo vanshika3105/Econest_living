@@ -19,6 +19,7 @@ import recommendationRoutes from './routes/recommendation.routes.js';
 import rentalRoutes from './routes/rental.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import securityRoutes from './routes/security.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 dotenv.config();
 
@@ -99,6 +100,7 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/rentals', rentalRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/security', securityRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

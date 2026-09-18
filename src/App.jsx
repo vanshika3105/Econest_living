@@ -445,6 +445,7 @@ function Navbar({ page, setPage, cart }) {
   const NAV_LINKS = {
     customer: [
       { id: "shop", label: "Shop", icon: "Leaf" },
+      { id: "user-dashboard", label: "Dashboard", icon: "BarChart" },
       { id: "cart", label: "Cart", icon: "Cart" },
       { id: "orders", label: "My Orders", icon: "Package" },
     ],
@@ -455,12 +456,12 @@ function Navbar({ page, setPage, cart }) {
     ],
     admin: [
       { id: "admin-home", label: "Overview", icon: "BarChart" },
-      { id: "admin-crm", label: "CRM Mode", icon: "Award" },
-      { id: "admin-security", label: "Security SOC", icon: "Shield" },
-      { id: "admin-reviews", label: "Global Feedback", icon: "Star" },
-      { id: "admin-users", label: "Users", icon: "Users" },
-      { id: "admin-orders", label: "Orders", icon: "Package" },
-      { id: "admin-vendors", label: "Vendors", icon: "Factory" },
+      { id: "admin-tracking", label: "Live Tracking", icon: "Truck" },
+      { id: "admin-controls", label: "Business Controls", icon: "Zap" },
+      { id: "admin-scm", label: "SCM", icon: "Globe" },
+      { id: "admin-crm", label: "CRM", icon: "Award" },
+      { id: "admin-security", label: "SOC", icon: "Shield" },
+      { id: "admin-reviews", label: "Feedback", icon: "Star" },
     ],
     guest: [
       { id: "shop", label: "Shop", icon: "Leaf" },
@@ -468,7 +469,7 @@ function Navbar({ page, setPage, cart }) {
   };
 
   const links = NAV_LINKS[role] || NAV_LINKS.guest;
-  const homeId = role === "supplier" ? "vendor-home" : role === "admin" ? "admin-home" : "shop";
+  const homeId = role === "supplier" ? "vendor-home" : role === "admin" ? "admin-home" : role === "customer" ? "user-dashboard" : "shop";
 
   return (
     <nav className="glass-effect" style={{ 
@@ -2517,6 +2518,56 @@ function RegisterPage({ setPage }) {
 // USER — UserDashboard
 // ════════════════════════════════════════════════════════════════════════════
 
+function CustomerPolicy() {
+  const policies = [
+    {
+      title: "Sustainable Returns",
+      icon: "RefreshCw",
+      content: "We offer a 30-day return policy. To maintain our eco-commitment, returned items are either refurbished or recycled through our 'Circular Life' program."
+    },
+    {
+      title: "Eco-Shipping",
+      icon: "Truck",
+      content: "All orders use plastic-free, 100% biodegradable packaging. We consolidate shipments to minimize carbon emissions."
+    },
+    {
+      title: "Quality Warranty",
+      icon: "Award",
+      content: "Every piece comes with a 5-year structural warranty. If craftsmanship fails, we repair or replace it, ensuring lifetime durability."
+    },
+    {
+      title: "Data Privacy",
+      icon: "Shield",
+      content: "Your privacy is our priority. We only collect data necessary for orders and to improve our AI design studio recommendations."
+    }
+  ];
+
+  return (
+    <div style={{ marginTop: 48, borderTop: `1px solid ${T.border}`, paddingTop: 40 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+        <div style={{ width: 32, height: 32, background: T.greenLight, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Ic name="Shield" size={18} color={T.green} />
+        </div>
+        <h3 style={{ fontSize: 20, fontWeight: 800, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>Customer & Sustainability Policy</h3>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
+        {policies.map(p => (
+          <Card key={p.title} style={{ padding: 24, background: T.white, border: `1px solid ${T.border}` }} hover={true}>
+            <div style={{ width: 44, height: 44, background: T.greenLight, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <Ic name={p.icon} size={22} color={T.green} />
+            </div>
+            <h4 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 10, fontFamily: "'Poppins',sans-serif" }}>{p.title}</h4>
+            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6 }}>{p.content}</p>
+          </Card>
+        ))}
+      </div>
+      <div style={{ marginTop: 32, padding: 20, background: T.bg, borderRadius: 16, border: `1px dashed ${T.borderMid}`, textAlign: "center" }}>
+         <p style={{ fontSize: 14, color: T.slate }}>Need more details? Download our full <span style={{ color: T.green, fontWeight: 700, cursor: "pointer" }}>Sustainability Manifesto (PDF)</span></p>
+      </div>
+    </div>
+  );
+}
+
 function UserDashboard({ setPage, orders, cart }) {
   const { user } = useAuth();
   const [crm, setCrm] = useState({ ecoScore: 0, loyaltyPoints: 0, loyaltyTier: "Basic", totalCarbonSaved: 0 });
@@ -2614,6 +2665,8 @@ function UserDashboard({ setPage, orders, cart }) {
           </Btn>
         </Card>
       </div>
+
+      <CustomerPolicy />
     </div>
   );
 }
@@ -3181,40 +3234,233 @@ function AdminCRMPage({ data }) {
 
 function AdminReviewsPage() {
   const [reviews, setReviews] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('feed'); // 'feed' or 'analysis'
 
   useEffect(() => {
-    API.get('/reviews/all')
-      .then(res => setReviews(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+    const fetchData = async () => {
+      try {
+        const [revRes, anaRes] = await Promise.all([
+          API.get('/reviews/all'),
+          API.get('/admin/crm/reviews-analysis')
+        ]);
+        setReviews(revRes.data || []);
+        setAnalysis(anaRes.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 32px" }}>
-      <div style={{ marginBottom: 40 }}>
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: T.navy, fontFamily: "'Poppins', sans-serif" }}>Global Feedback</h2>
-        <p style={{ color: T.muted }}>Monitor what customers are saying about EcoNest products.</p>
-      </div>
+  if (loading) return <div style={{ padding: 100, textAlign: "center", color: T.muted }}>Analyzing Feedback...</div>;
 
-      {loading ? (
-        <p>Loading feedback...</p>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 24 }}>
-          {reviews.map(r => (
-            <Card key={r._id} style={{ padding: 24 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                <span style={{ fontWeight: 800, color: T.navy }}>{r.userName}</span>
-                <div style={{ display: "flex", gap: 3 }}>
-                  {[1,2,3,4,5].map(s => <Ic key={s} name="Star" size={12} color={s <= r.rating ? T.amber : T.borderMid} />)}
-                </div>
+  return (
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "40px 32px" }}>
+      <header style={{ marginBottom: 40, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: T.navy, fontFamily: "'Poppins', sans-serif" }}>Feedback & CRM Insights</h2>
+          <p style={{ color: T.muted, fontSize: 14, marginTop: 4 }}>Monitor customer satisfaction and optimization strategies.</p>
+        </div>
+        <div style={{ display: "flex", background: T.bg, padding: 4, borderRadius: 12 }}>
+          <button 
+            onClick={() => setActiveTab('feed')}
+            style={{ 
+              padding: "8px 20px", borderRadius: 10, border: "none", 
+              background: activeTab === 'feed' ? "white" : "transparent",
+              color: activeTab === 'feed' ? T.navy : T.muted,
+              boxShadow: activeTab === 'feed' ? "0 2px 8px rgba(0,0,0,0.05)" : "none",
+              fontSize: 13, fontWeight: 800, cursor: "pointer", transition: "0.2s"
+            }}
+          >All Feedback</button>
+          <button 
+            onClick={() => setActiveTab('analysis')}
+            style={{ 
+              padding: "8px 20px", borderRadius: 10, border: "none", 
+              background: activeTab === 'analysis' ? "white" : "transparent",
+              color: activeTab === 'analysis' ? T.navy : T.muted,
+              boxShadow: activeTab === 'analysis' ? "0 2px 8px rgba(0,0,0,0.05)" : "none",
+              fontSize: 13, fontWeight: 800, cursor: "pointer", transition: "0.2s"
+            }}
+          >CRM Insights</button>
+        </div>
+      </header>
+
+      {activeTab === 'analysis' && analysis && (
+        <div style={{ animation: "fadeIn 0.4s" }}>
+          {/* Summary Metrics */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
+            <Card style={{ padding: 24, textAlign: "center" }}>
+              <div style={{ fontSize: 32, fontWeight: 900, color: T.navy }}>{analysis.averageRating}</div>
+              <div style={{ display: "flex", justifyContent: "center", gap: 2, margin: "4px 0" }}>
+                {[1,2,3,4,5].map(s => <Ic key={s} name="Star" size={12} color={s <= Math.round(analysis.averageRating) ? T.amber : T.borderMid} />)}
               </div>
-              <p style={{ fontSize: 13, color: T.muted, marginBottom: 14 }}>Ref: {r.productId}</p>
-              <p style={{ fontSize: 14, color: T.navyMid, lineHeight: 1.6 }}>"{r.comment}"</p>
-              <p style={{ fontSize: 11, color: T.borderMid, marginTop: 12 }}>{new Date(r.createdAt).toLocaleString()}</p>
+              <div style={{ fontSize: 11, fontWeight: 800, color: T.muted, textTransform: "uppercase" }}>Avg Rating</div>
             </Card>
-          ))}
-          {reviews.length === 0 && <p style={{ color: T.muted }}>No feedback received yet.</p>}
+            <Card style={{ padding: 24, textAlign: "center" }}>
+              <div style={{ fontSize: 32, fontWeight: 900, color: T.green }}>{analysis.good}</div>
+              <div style={{ height: 4, background: T.bg, borderRadius: 10, margin: "12px 0 8px", overflow: "hidden" }}>
+                <div style={{ height: "100%", background: T.green, width: `${(analysis.good/analysis.total)*100}%` }} />
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: T.muted, textTransform: "uppercase" }}>Positive Experience</div>
+            </Card>
+            <Card style={{ padding: 24, textAlign: "center" }}>
+              <div style={{ fontSize: 32, fontWeight: 900, color: T.amber }}>{analysis.neutral}</div>
+              <div style={{ height: 4, background: T.bg, borderRadius: 10, margin: "12px 0 8px", overflow: "hidden" }}>
+                <div style={{ height: "100%", background: T.amber, width: `${(analysis.neutral/analysis.total)*100}%` }} />
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: T.muted, textTransform: "uppercase" }}>Neutral / Moderate</div>
+            </Card>
+            <Card style={{ padding: 24, textAlign: "center" }}>
+              <div style={{ fontSize: 32, fontWeight: 900, color: T.red }}>{analysis.bad}</div>
+              <div style={{ height: 4, background: T.bg, borderRadius: 10, margin: "12px 0 8px", overflow: "hidden" }}>
+                <div style={{ height: "100%", background: T.red, width: `${(analysis.bad/analysis.total)*100}%` }} />
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: T.muted, textTransform: "uppercase" }}>Requires Attention</div>
+            </Card>
+          </div>
+
+          {/* Graphs Section */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24, marginBottom: 32 }}>
+            {/* Sentiment Breakdown */}
+            <Card hover={false} style={{ padding: 28 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 20 }}>Sentiment Breakdown</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {[5,4,3,2,1].map(star => {
+                  const count = analysis.sentimentDistribution[star] || 0;
+                  const pct = analysis.total ? (count / analysis.total) * 100 : 0;
+                  const color = star >= 4 ? T.green : star === 3 ? T.amber : T.red;
+                  return (
+                    <div key={star} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: T.muted, width: 45 }}>{star} Stars</span>
+                      <div style={{ flex: 1, height: 8, background: T.bg, borderRadius: 10, overflow: "hidden" }}>
+                        <div style={{ height: "100%", background: color, width: `${pct}%`, transition: "width 1s ease" }} />
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: T.navy, width: 30, textAlign: "right" }}>{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {/* Rating Trend */}
+            <Card hover={false} style={{ padding: 28 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy }}>14-Day Rating Trend</h3>
+                <div style={{ fontSize: 11, fontWeight: 800, color: T.green }}>Average: {analysis.averageRating} / 5.0</div>
+              </div>
+              <div style={{ height: 160, display: "flex", alignItems: "flex-end", gap: 8, paddingBottom: 20, borderBottom: `1px solid ${T.border}` }}>
+                {(analysis.ratingTrend || []).map((t, idx) => {
+                  const h = t.avg ? (t.avg / 5) * 100 : 5;
+                  const color = t.avg >= 4 ? T.green : t.avg >= 3 ? T.amber : t.avg > 0 ? T.red : T.borderMid;
+                  return (
+                    <div key={idx} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, position: "relative" }}>
+                      <div 
+                        style={{ 
+                          width: "100%", height: `${h}%`, background: `linear-gradient(180deg, ${color}, ${color}55)`, 
+                          borderRadius: "4px 4px 0 0", minHeight: 4, transition: "height 0.8s ease" 
+                        }} 
+                      >
+                        {t.avg > 0 && <span style={{ position: "absolute", top: -18, left: "50%", transform: "translateX(-50%)", fontSize: 9, fontWeight: 900, color: color }}>{t.avg}</span>}
+                      </div>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: T.muted, whiteSpace: "nowrap" }}>{t.date}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: T.green }} /> <span style={{ fontSize: 10, color: T.muted }}>Excellent</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: T.amber }} /> <span style={{ fontSize: 10, color: T.muted }}>Moderate</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: T.red }} /> <span style={{ fontSize: 10, color: T.muted }}>Critical</span></div>
+              </div>
+            </Card>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            {/* Top Pain Points */}
+            <Card hover={false} style={{ padding: 28 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: T.navy, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+                <Ic name="Alert" color={T.red} size={20} /> Top Issues (Keyword Analysis)
+              </h3>
+              {analysis.recentKeywords && analysis.recentKeywords.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {analysis.recentKeywords.map(kw => (
+                    <div key={kw.keyword} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: T.bg, borderRadius: 12 }}>
+                      <span style={{ fontWeight: 700, color: T.navy, textTransform: "capitalize" }}>{kw.keyword}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 100, height: 6, background: T.borderMid, borderRadius: 10, overflow: "hidden" }}>
+                          <div style={{ height: "100%", background: T.red, width: `${Math.min(100, (kw.count/analysis.bad)*100)}%` }} />
+                        </div>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: T.red }}>{kw.count} mentions</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: T.muted, textAlign: "center", padding: 40 }}>No significant keywords detected in negative reviews.</p>
+              )}
+            </Card>
+
+            {/* Suggestions */}
+            <Card hover={false} style={{ padding: 28, background: `linear-gradient(135deg, white, ${T.greenLight}33)` }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: T.navy, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+                <Ic name="Zap" color={T.green} size={20} /> Optimization Strategies
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {analysis.suggestions && analysis.suggestions.length > 0 ? (
+                  analysis.suggestions.map((s, idx) => (
+                    <div key={idx} style={{ display: "flex", gap: 14 }}>
+                      <div style={{ width: 24, height: 24, borderRadius: "50%", background: T.green, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, flexShrink: 0 }}>{idx + 1}</div>
+                      <p style={{ fontSize: 14, color: T.navyMid, lineHeight: 1.5, fontWeight: 600 }}>{s}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p style={{ color: T.muted }}>Analyzing feedback to generate recommendations...</p>
+                )}
+              </div>
+              {analysis.bad === 0 && (
+                <div style={{ marginTop: 24, padding: "16px", background: "white", borderRadius: 12, border: `1px solid ${T.green}33` }}>
+                  <p style={{ fontSize: 13, color: T.green, fontWeight: 800 }}>✓ Customer sentiment is remarkably high! Keep up the great work.</p>
+                </div>
+              )}
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'feed' && (
+        <div style={{ animation: "fadeIn 0.4s" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: 24 }}>
+            {reviews.map(r => (
+              <Card key={r._id} style={{ padding: 24, borderLeft: `4px solid ${r.rating >= 4 ? T.green : r.rating === 3 ? T.amber : T.red}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12, alignItems: "center" }}>
+                  <span style={{ fontWeight: 800, color: T.navy }}>{r.userName}</span>
+                  <div style={{ display: "flex", gap: 3 }}>
+                    {[1,2,3,4,5].map(s => <Ic key={s} name="Star" size={12} color={s <= r.rating ? T.amber : T.borderMid} />)}
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: T.muted, marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
+                  <Ic name="Package" size={12} color={T.borderMid} /> Ref ID: {r.productId}
+                </div>
+                <p style={{ fontSize: 14, color: T.navyMid, lineHeight: 1.6, fontStyle: "italic" }}>"{r.comment}"</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
+                  <span style={{ fontSize: 11, color: T.borderMid }}>{new Date(r.createdAt).toLocaleString()}</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: r.rating >= 4 ? T.green : r.rating === 3 ? T.amber : T.red, textTransform: "uppercase", background: (r.rating >= 4 ? T.green : r.rating === 3 ? T.amber : T.red) + '11', padding: "4px 8px", borderRadius: 6 }}>
+                    {r.rating >= 4 ? 'Positive' : r.rating === 3 ? 'Neutral' : 'Negative'}
+                  </span>
+                </div>
+              </Card>
+            ))}
+            {reviews.length === 0 && (
+              <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "100px 0" }}>
+                <Ic name="Award" size={48} color={T.borderMid} style={{ marginBottom: 16 }} />
+                <p style={{ color: T.muted }}>No feedback received yet. Customer voice is empty.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -3341,6 +3587,554 @@ function AdminSecurityPage() {
            </tbody>
         </table>
       </Card>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN — Live Order Tracking
+// ═══════════════════════════════════════════════════════════════
+
+const PIPELINE = ['Ordered','Packed','Shipped','Out for Delivery','Delivered'];
+const PIPE_COLORS = { Ordered: T.muted, Packed: T.amber, Shipped: T.blue, 'Out for Delivery': '#8b5cf6', Delivered: T.green, Cancelled: T.red };
+
+function AdminLiveTrackingPage() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [updatingId, setUpdatingId] = useState(null);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await API.get('/admin/orders');
+      setOrders(res.data || []);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchOrders(); const iv = setInterval(fetchOrders, 15000); return () => clearInterval(iv); }, []);
+
+  const handleStatusUpdate = async (order, newStatus) => {
+    setUpdatingId(order.orderId);
+    try {
+      await API.put(`/admin/orders/${order.orderId}/status`, { status: newStatus, note: `Advanced to ${newStatus}` });
+      await fetchOrders();
+    } catch (e) { console.error(e); }
+    finally { setUpdatingId(null); }
+  };
+
+  const filtered = filter === 'all' ? orders : filter === 'active' ? orders.filter(o => !['Delivered','Cancelled'].includes(o.status)) : orders.filter(o => o.status === filter);
+  const activeCt = orders.filter(o => !['Delivered','Cancelled'].includes(o.status)).length;
+
+  if (loading) return <div style={{ padding: 100, textAlign: "center", color: T.muted }}>Loading Live Tracking…</div>;
+
+  return (
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "40px 32px" }}>
+      <header style={{ marginBottom: 36, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 12px #10b981", animation: "pulse 2s infinite" }} />
+            <span style={{ fontSize: 11, fontWeight: 800, color: T.green, textTransform: "uppercase", letterSpacing: "0.15em" }}>Live</span>
+          </div>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>Order Tracking Center</h2>
+          <p style={{ color: T.muted, fontSize: 14, marginTop: 4 }}>{activeCt} active order{activeCt !== 1 ? 's' : ''} in pipeline · Auto-refresh 15s</p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {['all','active','Ordered','Packed','Shipped','Delivered'].map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={{ padding: "8px 16px", borderRadius: 10, border: filter === f ? `2px solid ${T.green}` : `1px solid ${T.borderMid}`, background: filter === f ? T.greenLight : "white", color: filter === f ? T.green : T.slate, fontSize: 12, fontWeight: 700, cursor: "pointer", textTransform: "capitalize" }}>{f}</button>
+          ))}
+        </div>
+      </header>
+
+      <style>{`@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }`}</style>
+
+      {/* Pipeline Summary */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16, marginBottom: 36 }}>
+        {PIPELINE.map((s, i) => {
+          const ct = orders.filter(o => o.status === s).length;
+          return (
+            <Card key={s} style={{ padding: 20, textAlign: "center", borderTop: `3px solid ${PIPE_COLORS[s]}` }}>
+              <div style={{ fontSize: 28, fontWeight: 900, color: T.navy }}>{ct}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: PIPE_COLORS[s], marginTop: 4 }}>{s}</div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Order Cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {filtered.map(o => {
+          const sc = PIPE_COLORS[o.status] || T.muted;
+          const pipeIdx = PIPELINE.indexOf(o.status);
+          const nextStatus = pipeIdx >= 0 && pipeIdx < PIPELINE.length - 1 ? PIPELINE[pipeIdx + 1] : null;
+          const isSelected = selected === o.orderId;
+          return (
+            <Card key={o.orderId || o._id} hover={false} style={{ overflow: "hidden", border: isSelected ? `2px solid ${sc}` : undefined }}>
+              <div style={{ display: "flex", alignItems: "center", padding: "20px 24px", gap: 20, cursor: "pointer" }} onClick={() => setSelected(isSelected ? null : o.orderId)}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: sc + "15", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Ic name="Truck" size={22} color={sc} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: "monospace", fontWeight: 800, color: T.green, fontSize: 14 }}>{o.orderId}</span>
+                    <span style={{ background: sc + "18", color: sc, padding: "4px 12px", borderRadius: 100, fontSize: 11, fontWeight: 800 }}>{o.status}</span>
+                  </div>
+                  <p style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>{o.items?.length || 0} items · {formatPrice(o.totalAmount || 0)} · {o.shippingAddress?.city || 'N/A'}</p>
+                </div>
+                {/* Pipeline progress */}
+                <div style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 200 }}>
+                  {PIPELINE.map((s, i) => (
+                    <div key={s} style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: i <= pipeIdx ? sc : T.borderMid, transition: "all 0.3s" }} />
+                      {i < PIPELINE.length - 1 && <div style={{ width: 24, height: 2, background: i < pipeIdx ? sc : T.borderMid }} />}
+                    </div>
+                  ))}
+                </div>
+                {nextStatus && o.status !== 'Cancelled' && (
+                  <Btn size="sm" onClick={e => { e.stopPropagation(); handleStatusUpdate(o, nextStatus); }} disabled={updatingId === o.orderId} style={{ borderRadius: 10, fontSize: 11 }}>
+                    {updatingId === o.orderId ? '…' : `→ ${nextStatus}`}
+                  </Btn>
+                )}
+                <Ic name="ChevronRight" size={16} color={T.muted} style={{ transform: isSelected ? "rotate(90deg)" : "rotate(0deg)", transition: "0.2s" }} />
+              </div>
+
+              {isSelected && (
+                <div style={{ padding: "0 24px 24px", borderTop: `1px solid ${T.border}`, animation: "fadeIn 0.3s" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, paddingTop: 20 }}>
+                    <div>
+                      <h4 style={{ fontSize: 14, fontWeight: 800, color: T.navy, marginBottom: 12 }}>Shipping Details</h4>
+                      <p style={{ fontSize: 13, color: T.slate }}>{o.shippingAddress?.name} · {o.shippingAddress?.phone}</p>
+                      <p style={{ fontSize: 13, color: T.muted }}>{o.shippingAddress?.address}, {o.shippingAddress?.city} {o.shippingAddress?.pincode}</p>
+                      {o.carrier && <p style={{ fontSize: 12, color: T.blue, marginTop: 8 }}>Carrier: {o.carrier}</p>}
+                      {o.trackingNumber && <p style={{ fontSize: 12, color: T.blue }}>Tracking#: {o.trackingNumber}</p>}
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: 14, fontWeight: 800, color: T.navy, marginBottom: 12 }}>Tracking Timeline</h4>
+                      {(o.trackingHistory || []).map((ev, i) => (
+                        <div key={i} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ width: 10, height: 10, borderRadius: "50%", background: PIPE_COLORS[ev.status] || T.green }} />
+                            {i < (o.trackingHistory?.length || 0) - 1 && <div style={{ width: 2, flex: 1, background: T.borderMid }} />}
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{ev.status}</p>
+                            <p style={{ fontSize: 11, color: T.muted }}>{ev.note} · {new Date(ev.timestamp).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {o.status !== 'Delivered' && o.status !== 'Cancelled' && (
+                    <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+                      <Btn size="sm" variant="danger" onClick={() => handleStatusUpdate(o, 'Cancelled')}>Cancel Order</Btn>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          );
+        })}
+        {filtered.length === 0 && <p style={{ textAlign: "center", color: T.muted, padding: 60 }}>No orders match this filter.</p>}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN — Business Controls Center
+// ═══════════════════════════════════════════════════════════════
+
+function AdminBusinessControlsPage({ setPage }) {
+  const [tab, setTab] = useState('dashboard');
+  const [dash, setDash] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAll = async () => {
+    try {
+      const [dRes, uRes, pRes, oRes] = await Promise.all([
+        API.get('/admin/dashboard'),
+        API.get('/users'),
+        API.get('/products'),
+        API.get('/admin/orders')
+      ]);
+      setDash(dRes.data); setUsers(uRes.data || []); setProducts(pRes.data || []); setOrders(oRes.data || []);
+    } catch(e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchAll(); }, []);
+
+  const handleRoleChange = async (userId, newRole) => {
+    try { await API.put(`/admin/users/${userId}/role`, { role: newRole }); fetchAll(); } catch(e) { console.error(e); }
+  };
+  const handleDeleteUser = async (userId) => {
+    if (!confirm('Delete this user permanently?')) return;
+    try { await API.delete(`/admin/users/${userId}`); fetchAll(); } catch(e) { console.error(e); }
+  };
+  const handleProductStatus = async (pid, status) => {
+    try { await API.put(`/admin/products/${pid}/status`, { status }); fetchAll(); } catch(e) { console.error(e); }
+  };
+  const handleDeleteProduct = async (pid) => {
+    if (!confirm('Delete this product?')) return;
+    try { await API.delete(`/admin/products/${pid}`); fetchAll(); } catch(e) { console.error(e); }
+  };
+  const handleStockUpdate = async (pid, stock) => {
+    try { await API.put(`/admin/products/${pid}/stock`, { stock }); fetchAll(); } catch(e) { console.error(e); }
+  };
+
+  const TABS = [
+    { id: 'dashboard', label: 'Revenue', icon: 'Trend' },
+    { id: 'orders', label: 'Orders', icon: 'Package' },
+    { id: 'products', label: 'Products', icon: 'Tag' },
+    { id: 'users', label: 'Users', icon: 'Users' },
+  ];
+
+  if (loading) return <div style={{ padding: 100, textAlign: "center", color: T.muted }}>Loading Business Controls…</div>;
+
+  return (
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "40px 32px" }}>
+      <h2 style={{ fontSize: 28, fontWeight: 900, color: T.navy, fontFamily: "'Poppins',sans-serif", marginBottom: 8 }}>Business Control Center</h2>
+      <p style={{ color: T.muted, fontSize: 14, marginBottom: 28 }}>Full business operations management</p>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 32, borderBottom: `2px solid ${T.border}`, paddingBottom: 12 }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: tab === t.id ? T.navy : "transparent", color: tab === t.id ? "white" : T.slate, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}>
+            <Ic name={t.icon} size={15} color={tab === t.id ? "white" : T.muted} /> {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Revenue Dashboard Tab */}
+      {tab === 'dashboard' && dash && (
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 20, marginBottom: 32 }}>
+            {[
+              { label: "Total Revenue", val: dash.totalRevenue >= 100000 ? `₹${(dash.totalRevenue/100000).toFixed(1)}L` : formatPrice(dash.totalRevenue || 0), icon: "Trend", color: T.green },
+              { label: "Monthly Revenue", val: formatPrice(dash.monthlyRevenue || 0), icon: "BarChart", color: T.blue },
+              { label: "Active Orders", val: dash.activeOrders, icon: "Truck", color: T.amber },
+              { label: "Low Stock Items", val: dash.lowStockProducts, icon: "Alert", color: T.red },
+            ].map(s => (
+              <Card key={s.label} style={{ padding: 24 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 14, background: s.color + "15", display: "flex", alignItems: "center", justifyContent: "center" }}><Ic name={s.icon} size={22} color={s.color} /></div>
+                  <div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: T.navy }}>{s.val}</div>
+                    <div style={{ fontSize: 11, color: T.muted, fontWeight: 600 }}>{s.label}</div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+          {/* Revenue Chart */}
+          <Card hover={false} style={{ padding: 28, marginBottom: 24 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 20 }}>7-Day Revenue Trend</h3>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 12, height: 180 }}>
+              {(dash.dailyRevenue || []).map((d, i) => {
+                const maxRev = Math.max(...(dash.dailyRevenue || []).map(x => x.revenue), 1);
+                const h = Math.max((d.revenue / maxRev) * 150, 8);
+                return (
+                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: T.green }}>{d.revenue > 0 ? formatPrice(d.revenue) : '—'}</span>
+                    <div style={{ width: "100%", height: h, background: `linear-gradient(180deg, ${T.green}, ${T.greenDark})`, borderRadius: 8, transition: "height 0.5s ease" }} />
+                    <span style={{ fontSize: 10, color: T.muted, fontWeight: 600 }}>{d.date?.slice(5)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+          {/* Order Status Distribution */}
+          <Card hover={false} style={{ padding: 28 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 16 }}>Order Status Distribution</h3>
+            <div style={{ display: "flex", gap: 16 }}>
+              {Object.entries(dash.statusCounts || {}).map(([st, ct]) => (
+                <div key={st} style={{ padding: "12px 20px", background: (PIPE_COLORS[st] || T.muted) + "12", borderRadius: 12, flex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: PIPE_COLORS[st] || T.navy }}>{ct}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: PIPE_COLORS[st] || T.muted }}>{st}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Orders Management Tab */}
+      {tab === 'orders' && (
+        <Card hover={false} style={{ overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead><tr style={{ background: T.bg }}>
+              {["Order ID","Customer","Total","Status","Date","Action"].map(h => <th key={h} style={{ padding: "14px 18px", textAlign: "left", fontSize: 11, fontWeight: 700, color: T.muted, textTransform: "uppercase" }}>{h}</th>)}
+            </tr></thead>
+            <tbody>
+              {orders.slice(0,30).map(o => (
+                <tr key={o.orderId || o._id} style={{ borderTop: `1px solid ${T.border}` }}>
+                  <td style={{ padding: "14px 18px", fontFamily: "monospace", fontWeight: 800, color: T.green }}>{o.orderId}</td>
+                  <td style={{ padding: "14px 18px", fontSize: 13 }}>{o.shippingAddress?.name || 'N/A'}</td>
+                  <td style={{ padding: "14px 18px", fontWeight: 800 }}>{formatPrice(o.totalAmount || 0)}</td>
+                  <td style={{ padding: "14px 18px" }}><Badge color={PIPE_COLORS[o.status] || T.muted}>{o.status}</Badge></td>
+                  <td style={{ padding: "14px 18px", fontSize: 12, color: T.muted }}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                  <td style={{ padding: "14px 18px" }}><Btn size="sm" variant="outline" onClick={() => setPage("admin-tracking")}>Track</Btn></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      {/* Products Management Tab */}
+      {tab === 'products' && (
+        <Card hover={false} style={{ overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead><tr style={{ background: T.bg }}>
+              {["Product","Category","Stock","Eco","Status","Actions"].map(h => <th key={h} style={{ padding: "14px 18px", textAlign: "left", fontSize: 11, fontWeight: 700, color: T.muted, textTransform: "uppercase" }}>{h}</th>)}
+            </tr></thead>
+            <tbody>
+              {products.map(p => (
+                <tr key={p._id} style={{ borderTop: `1px solid ${T.border}` }}>
+                  <td style={{ padding: "14px 18px" }}><span style={{ fontWeight: 700, color: T.navy, fontSize: 13 }}>{p.name}</span><br/><span style={{ fontSize: 11, color: T.muted }}>{p.vendorName || 'Unknown'}</span></td>
+                  <td style={{ padding: "14px 18px", fontSize: 12 }}>{p.category}</td>
+                  <td style={{ padding: "14px 18px" }}>
+                    <input type="number" defaultValue={p.stock} style={{ width: 60, padding: "6px 8px", border: `1px solid ${T.borderMid}`, borderRadius: 8, fontSize: 13 }} onBlur={e => handleStockUpdate(p._id, e.target.value)} />
+                  </td>
+                  <td style={{ padding: "14px 18px" }}><Badge color={ecoColor(p.ecoScore || 0)}>{p.ecoScore || 0}</Badge></td>
+                  <td style={{ padding: "14px 18px" }}>
+                    <select value={p.status} onChange={e => handleProductStatus(p._id, e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${T.borderMid}`, fontSize: 12, fontWeight: 700, color: p.status === 'active' ? T.green : p.status === 'rejected' ? T.red : T.amber }}>
+                      <option value="active">Active</option><option value="pending">Pending</option><option value="rejected">Rejected</option>
+                    </select>
+                  </td>
+                  <td style={{ padding: "14px 18px" }}><Btn size="sm" variant="danger" onClick={() => handleDeleteProduct(p._id)}>Delete</Btn></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      {/* Users Management Tab */}
+      {tab === 'users' && (
+        <Card hover={false} style={{ overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead><tr style={{ background: T.bg }}>
+              {["User","Email","Role","Loyalty","Actions"].map(h => <th key={h} style={{ padding: "14px 18px", textAlign: "left", fontSize: 11, fontWeight: 700, color: T.muted, textTransform: "uppercase" }}>{h}</th>)}
+            </tr></thead>
+            <tbody>
+              {users.map(u => (
+                <tr key={u._id} style={{ borderTop: `1px solid ${T.border}` }}>
+                  <td style={{ padding: "14px 18px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg,${T.green},${T.greenDark})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 12, fontWeight: 800 }}>{(u.name?.[0] || 'U').toUpperCase()}</div>
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{u.name}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: "14px 18px", fontSize: 12, color: T.muted }}>{u.email}</td>
+                  <td style={{ padding: "14px 18px" }}>
+                    <select value={u.role} onChange={e => handleRoleChange(u._id, e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${T.borderMid}`, fontSize: 12, fontWeight: 700 }}>
+                      <option value="customer">Customer</option><option value="supplier">Supplier</option><option value="admin">Admin</option>
+                    </select>
+                  </td>
+                  <td style={{ padding: "14px 18px" }}><Badge color={T.amber}>{u.loyaltyTier || 'Basic'}</Badge></td>
+                  <td style={{ padding: "14px 18px" }}><Btn size="sm" variant="danger" onClick={() => handleDeleteUser(u._id)}>Delete</Btn></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN — Supply Chain Management (SCM) Dashboard
+// ═══════════════════════════════════════════════════════════════
+
+function AdminSCMPage() {
+  const [scm, setSCM] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('overview');
+
+  const fetchSCM = async () => {
+    try { const res = await API.get('/admin/scm/overview'); setSCM(res.data); }
+    catch(e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchSCM(); }, []);
+
+  const SCM_TABS = [
+    { id: 'overview', label: 'Inventory', icon: 'Package' },
+    { id: 'suppliers', label: 'Suppliers', icon: 'Factory' },
+    { id: 'procurement', label: 'Purchase Orders', icon: 'Cart' },
+    { id: 'alerts', label: 'Alerts', icon: 'Alert' },
+  ];
+
+  if (loading) return <div style={{ padding: 100, textAlign: "center", color: T.muted }}>Loading SCM Data…</div>;
+  if (!scm) return <div style={{ padding: 100, textAlign: "center", color: T.muted }}>SCM data unavailable.</div>;
+
+  const inv = scm.inventory || {};
+
+  return (
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "40px 32px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+        <div style={{ width: 52, height: 52, background: "linear-gradient(135deg, #2563eb, #3b82f6)", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center" }}><Ic name="Globe" size={24} color="white" /></div>
+        <div>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: T.navy, fontFamily: "'Poppins',sans-serif" }}>Supply Chain Management</h2>
+          <p style={{ color: T.muted, fontSize: 14 }}>Inventory, Suppliers, Procurement & Logistics</p>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, margin: "24px 0 32px", borderBottom: `2px solid ${T.border}`, paddingBottom: 12 }}>
+        {SCM_TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: tab === t.id ? T.blue : "transparent", color: tab === t.id ? "white" : T.slate, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}>
+            <Ic name={t.icon} size={15} color={tab === t.id ? "white" : T.muted} /> {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Inventory Overview */}
+      {tab === 'overview' && (
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16, marginBottom: 32 }}>
+            {[
+              { label: "Total Products", val: inv.totalProducts, icon: "Package", color: T.blue },
+              { label: "Total Stock", val: inv.totalStock?.toLocaleString(), icon: "Tag", color: T.green },
+              { label: "Inventory Value", val: inv.totalValue >= 100000 ? `₹${(inv.totalValue/100000).toFixed(1)}L` : formatPrice(inv.totalValue || 0), icon: "Trend", color: "#8b5cf6" },
+              { label: "Low Stock", val: inv.lowStockCount, icon: "Alert", color: T.amber },
+              { label: "Out of Stock", val: inv.outOfStockCount, icon: "X", color: T.red },
+            ].map(s => (
+              <Card key={s.label} style={{ padding: 20, textAlign: "center", borderTop: `3px solid ${s.color}` }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: s.color + "15", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}><Ic name={s.icon} size={18} color={s.color} /></div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: T.navy }}>{s.val}</div>
+                <div style={{ fontSize: 11, color: T.muted, fontWeight: 600 }}>{s.label}</div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Category Inventory */}
+          <Card hover={false} style={{ padding: 28, marginBottom: 24 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy, marginBottom: 20 }}>Inventory by Category</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 14 }}>
+              {Object.entries(inv.categoryInventory || {}).map(([cat, data]) => (
+                <div key={cat} style={{ padding: 16, background: T.bg, borderRadius: 14, textAlign: "center" }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: T.navy }}>{cat}</div>
+                  <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>{data.count} products · {data.stock} units</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: T.green, marginTop: 4 }}>{formatPrice(data.value)}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Low Stock Alert List */}
+          {(inv.lowStockProducts || []).length > 0 && (
+            <Card hover={false} style={{ padding: 24, border: `2px solid ${T.amber}30` }}>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: T.amber, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}><Ic name="Alert" size={18} color={T.amber} /> Low Stock Warnings</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {inv.lowStockProducts.map(p => (
+                  <div key={p._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", background: T.amberLight, borderRadius: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{p.name}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <Badge color={T.muted}>{p.category}</Badge>
+                      <span style={{ fontSize: 14, fontWeight: 900, color: T.red }}>{p.stock} left</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Suppliers Tab */}
+      {tab === 'suppliers' && (
+        <div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {(scm.suppliers || []).map(v => (
+              <Card key={v._id} hover={false} style={{ padding: 24, display: "flex", alignItems: "center", gap: 20 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 16, background: T.greenLight, display: "flex", alignItems: "center", justifyContent: "center" }}><Ic name="Factory" size={24} color={T.green} /></div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 800, fontSize: 15, color: T.navy }}>{v.name}</p>
+                  <p style={{ fontSize: 12, color: T.muted }}>{v.email}</p>
+                </div>
+                <div style={{ textAlign: "center", padding: "0 20px" }}>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: T.navy }}>{v.productCount}</div>
+                  <div style={{ fontSize: 10, color: T.muted }}>Products</div>
+                </div>
+                <div style={{ textAlign: "center", padding: "0 20px" }}>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: T.green }}>{v.totalStock}</div>
+                  <div style={{ fontSize: 10, color: T.muted }}>Total Stock</div>
+                </div>
+                <div style={{ textAlign: "center", padding: "0 20px" }}>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: T.blue }}>{v.avgEcoScore}</div>
+                  <div style={{ fontSize: 10, color: T.muted }}>Avg Eco Score</div>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {(v.categories || []).slice(0, 3).map(c => <Badge key={c} color={T.blue}>{c}</Badge>)}
+                </div>
+              </Card>
+            ))}
+            {(scm.suppliers || []).length === 0 && <p style={{ textAlign: "center", color: T.muted, padding: 40 }}>No suppliers found.</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Purchase Orders Tab */}
+      {tab === 'procurement' && (
+        <Card hover={false} style={{ overflow: "hidden" }}>
+          <div style={{ padding: "16px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: T.navy }}>Purchase Orders</h3>
+            <div style={{ display: "flex", gap: 12 }}>
+              {Object.entries(scm.poStatusCounts || {}).map(([st, ct]) => <Badge key={st} color={T.blue}>{st}: {ct}</Badge>)}
+            </div>
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead><tr style={{ background: T.bg }}>
+              {["PO #","Vendor","Amount","Status","Expected","Created"].map(h => <th key={h} style={{ padding: "12px 18px", textAlign: "left", fontSize: 11, fontWeight: 700, color: T.muted, textTransform: "uppercase" }}>{h}</th>)}
+            </tr></thead>
+            <tbody>
+              {(scm.purchaseOrders || []).map(po => (
+                <tr key={po._id} style={{ borderTop: `1px solid ${T.border}` }}>
+                  <td style={{ padding: "14px 18px", fontFamily: "monospace", fontWeight: 800, color: T.blue }}>{po.poNumber}</td>
+                  <td style={{ padding: "14px 18px", fontSize: 13 }}>{po.vendorName || 'N/A'}</td>
+                  <td style={{ padding: "14px 18px", fontWeight: 800 }}>{formatPrice(po.totalAmount || 0)}</td>
+                  <td style={{ padding: "14px 18px" }}><Badge color={po.status === 'Received' ? T.green : po.status === 'Cancelled' ? T.red : T.blue}>{po.status}</Badge></td>
+                  <td style={{ padding: "14px 18px", fontSize: 12, color: T.muted }}>{po.expectedDelivery ? new Date(po.expectedDelivery).toLocaleDateString() : '—'}</td>
+                  <td style={{ padding: "14px 18px", fontSize: 12, color: T.muted }}>{new Date(po.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))}
+              {(scm.purchaseOrders || []).length === 0 && <tr><td colSpan="6" style={{ padding: 24, textAlign: "center", color: T.muted }}>No purchase orders yet.</td></tr>}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      {/* Alerts Tab */}
+      {tab === 'alerts' && (
+        <div>
+          {(scm.alerts || []).length === 0 ? (
+            <Card hover={false} style={{ padding: 48, textAlign: "center" }}>
+              <Ic name="Check" size={36} color={T.green} style={{ margin: "0 auto 16px" }} />
+              <p style={{ fontSize: 16, fontWeight: 700, color: T.green }}>All Clear!</p>
+              <p style={{ color: T.muted, fontSize: 13 }}>No active inventory alerts.</p>
+            </Card>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {scm.alerts.map(a => (
+                <Card key={a._id} hover={false} style={{ padding: 20, display: "flex", alignItems: "center", gap: 16, borderLeft: `4px solid ${a.type === 'out_of_stock' ? T.red : T.amber}` }}>
+                  <Ic name="Alert" size={20} color={a.type === 'out_of_stock' ? T.red : T.amber} />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 700, fontSize: 14, color: T.navy }}>{a.productName}</p>
+                    <p style={{ fontSize: 12, color: T.muted }}>{a.type === 'out_of_stock' ? 'OUT OF STOCK' : `Low stock: ${a.currentStock} remaining`}</p>
+                  </div>
+                  <Badge color={a.type === 'out_of_stock' ? T.red : T.amber}>{a.type.replace(/_/g, ' ')}</Badge>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -3479,7 +4273,7 @@ function Footer({ setPage }) {
             },
             {
               title: "Customer Care",
-              links: [["Order Tracking", () => setPage("orders")], ["Return Policy", null], ["Warranty", null], ["FAQs", null]]
+              links: [["Order Tracking", () => setPage("orders")], ["Customer Policy", () => setPage("policy")], ["Warranty", () => setPage("policy")], ["FAQs", null]]
             },
             {
               title: "Contact",
@@ -3676,8 +4470,7 @@ function AppInner() {
   }, [notify]);
 
   const noNavPages = ["login", "register"];
-  const noFooterPages = ["login", "register", "vendor-home", "vendor-products", "vendor-add", "admin-home", "admin-users", "admin-orders", "admin-vendors", "admin-security", "admin-reviews", "admin-crm"];
-
+  const noFooterPages = ["login", "register", "vendor-home", "vendor-products", "vendor-add", "admin-home", "admin-users", "admin-orders", "admin-vendors", "admin-security", "admin-reviews", "admin-crm", "admin-tracking", "admin-controls", "admin-scm"];
   return (
     <div style={{ minHeight: "100vh", background: T.white, overflowX: "hidden" }}>
       <style>{`
@@ -3709,6 +4502,14 @@ function AppInner() {
         {/* ── CUSTOMER PAGES ───────────────────────────────────────── */}
         {page === "marketing" && <MarketingLandingPage onExplore={() => setPage("shop")} />}
         {page === "ai-customization" && <AICustomizationLandingPage onExplore={() => setPage("shop")} />}
+        {page === "policy" && (
+          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 32px" }}>
+             <CustomerPolicy />
+             <div style={{ textAlign: "center", marginTop: 40 }}>
+                <Btn variant="outline" onClick={() => setPage(user ? (user.role === 'customer' ? 'shop' : 'vendor-home') : 'login')}>Back to Home</Btn>
+             </div>
+          </div>
+        )}
         {page === "shop" && (
           <ProtectedPage allowedRole="customer" setPage={setPage}>
             <div>
@@ -3795,6 +4596,21 @@ function AppInner() {
         {page === "admin-crm" && (
           <ProtectedPage allowedRole="admin" setPage={setPage}>
             <AdminCRMPage data={adminData} />
+          </ProtectedPage>
+        )}
+        {page === "admin-tracking" && (
+          <ProtectedPage allowedRole="admin" setPage={setPage}>
+            <AdminLiveTrackingPage />
+          </ProtectedPage>
+        )}
+        {page === "admin-controls" && (
+          <ProtectedPage allowedRole="admin" setPage={setPage}>
+            <AdminBusinessControlsPage setPage={setPage} />
+          </ProtectedPage>
+        )}
+        {page === "admin-scm" && (
+          <ProtectedPage allowedRole="admin" setPage={setPage}>
+            <AdminSCMPage />
           </ProtectedPage>
         )}
 
